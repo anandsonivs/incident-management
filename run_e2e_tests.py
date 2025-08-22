@@ -37,6 +37,9 @@ class E2ETestRunner:
         self.test_escalation_policy = None
         self.admin_user = None
         self.admin_token = None
+        self.test_team = None
+        self.test_team_user = None
+        self.test_team_token = None
     
     def log_test(self, test_name: str, success: bool, details: str = ""):
         """Log test result."""
@@ -77,7 +80,7 @@ class E2ETestRunner:
             if response.status_code == 200:
                 data = response.json()
                 path_count = len(data.get('paths', {}))
-                self.log_test("OpenAPI Schema", True, f"27 endpoints documented")
+                self.log_test("OpenAPI Schema", True, f"{path_count} endpoints documented")
             else:
                 self.log_test("OpenAPI Schema", False, f"Status: {response.status_code}")
         except Exception as e:
@@ -136,6 +139,252 @@ class E2ETestRunner:
             self.log_test("Token Validation", response.status_code == 200, f"Status: {response.status_code}")
         except Exception as e:
             self.log_test("Token Validation", False, f"Error: {e}")
+    
+    def test_team_management(self):
+        """Test team management endpoints."""
+        print("\n🔍 Testing Team Management...")
+        
+        if not self.admin_token:
+            print("⚠️  Skipping team tests - no admin token")
+            return
+        
+        # Create team
+        timestamp = int(time.time())
+        team_data = {
+            "name": f"Test Team {timestamp}",
+            "description": "A test team for E2E testing",
+            "is_active": True
+        }
+        
+        try:
+            response = self.session.post(f"{BASE_URL}/v1/teams/", json=team_data)
+            if response.status_code == 201:
+                self.test_team = response.json()
+                self.log_test("Create Team", True, f"Team created: {self.test_team['id']}")
+            else:
+                self.log_test("Create Team", False, f"Status: {response.status_code}")
+                return
+        except Exception as e:
+            self.log_test("Create Team", False, f"Error: {e}")
+            return
+        
+        # Test get all teams
+        try:
+            response = self.session.get(f"{BASE_URL}/v1/teams/")
+            self.log_test("Get All Teams", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get All Teams", False, f"Error: {e}")
+        
+        # Test get specific team
+        try:
+            response = self.session.get(f"{BASE_URL}/v1/teams/{self.test_team['id']}")
+            self.log_test("Get Team", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Team", False, f"Error: {e}")
+        
+        # Test update team
+        try:
+            update_data = {"description": "Updated team description"}
+            response = self.session.put(f"{BASE_URL}/v1/teams/{self.test_team['id']}", json=update_data)
+            self.log_test("Update Team", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Update Team", False, f"Error: {e}")
+        
+        # Test create team with duplicate name (should fail)
+        try:
+            response = self.session.post(f"{BASE_URL}/v1/teams/", json=team_data)
+            self.log_test("Create Duplicate Team", response.status_code == 400, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Create Duplicate Team", False, f"Error: {e}")
+        
+        # Test get non-existent team
+        try:
+            response = self.session.get(f"{BASE_URL}/v1/teams/999999")
+            self.log_test("Get Non-existent Team", response.status_code == 404, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Non-existent Team", False, f"Error: {e}")
+    
+    def test_user_roles_and_teams(self):
+        """Test user roles and team assignments."""
+        print("\n🔍 Testing User Roles and Teams...")
+        
+        if not self.admin_token or not self.test_team:
+            print("⚠️  Skipping user role tests - no admin token or test team")
+            return
+        
+        # Create user with team and role
+        timestamp = int(time.time())
+        team_user_data = {
+            "email": f"teamuser{timestamp}@example.com",
+            "password": "teampass123",
+            "full_name": "Team User",
+            "team_id": self.test_team['id'],
+            "role": "team_lead"
+        }
+        
+        try:
+            response = self.session.post(f"{BASE_URL}/v1/users/", json=team_user_data)
+            if response.status_code == 201:
+                self.test_team_user = response.json()
+                self.log_test("Create User with Team and Role", True, f"User created: {self.test_team_user['email']}")
+            else:
+                self.log_test("Create User with Team and Role", False, f"Status: {response.status_code}")
+                return
+        except Exception as e:
+            self.log_test("Create User with Team and Role", False, f"Error: {e}")
+            return
+        
+        # Test get users by role
+        try:
+            response = self.session.get(f"{BASE_URL}/v1/users/?role=team_lead")
+            self.log_test("Get Users by Role", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Users by Role", False, f"Error: {e}")
+        
+        # Test get users by team
+        try:
+            response = self.session.get(f"{BASE_URL}/v1/users/?team_id={self.test_team['id']}")
+            self.log_test("Get Users by Team", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Users by Team", False, f"Error: {e}")
+        
+        # Test get users by role and team
+        try:
+            response = self.session.get(f"{BASE_URL}/v1/users/?role=team_lead&team_id={self.test_team['id']}")
+            self.log_test("Get Users by Role and Team", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Users by Role and Team", False, f"Error: {e}")
+        
+        # Test create user with invalid role
+        try:
+            invalid_user_data = {
+                "email": f"invaliduser{timestamp}@example.com",
+                "password": "invalidpass123",
+                "full_name": "Invalid User",
+                "role": "invalid_role"
+            }
+            response = self.session.post(f"{BASE_URL}/v1/users/", json=invalid_user_data)
+            self.log_test("Create User with Invalid Role", response.status_code == 422, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Create User with Invalid Role", False, f"Error: {e}")
+        
+        # Test update user role and team
+        try:
+            update_data = {"role": "manager", "team_id": self.test_team['id']}
+            response = self.session.put(f"{BASE_URL}/v1/users/{self.test_team_user['id']}", json=update_data)
+            self.log_test("Update User Role and Team", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Update User Role and Team", False, f"Error: {e}")
+    
+    def test_team_based_incidents(self):
+        """Test team-based incident management."""
+        print("\n🔍 Testing Team-Based Incidents...")
+        
+        if not self.admin_token or not self.test_team:
+            print("⚠️  Skipping team incident tests - no admin token or test team")
+            return
+        
+        # Create incident with team
+        incident_data = {
+            "title": "Team Test Incident",
+            "description": "This is a test incident for a team",
+            "severity": "high",
+            "service": "team-service",
+            "team_id": self.test_team['id']
+        }
+        
+        try:
+            response = self.session.post(f"{BASE_URL}/v1/incidents/", json=incident_data)
+            if response.status_code == 201:
+                team_incident = response.json()
+                self.log_test("Create Team Incident", True, f"Incident created: {team_incident['id']}")
+            else:
+                self.log_test("Create Team Incident", False, f"Status: {response.status_code}")
+                return
+        except Exception as e:
+            self.log_test("Create Team Incident", False, f"Error: {e}")
+            return
+        
+        # Test get incidents by team
+        try:
+            response = self.session.get(f"{BASE_URL}/v1/incidents/?team_id={self.test_team['id']}")
+            self.log_test("Get Incidents by Team", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Incidents by Team", False, f"Error: {e}")
+        
+        # Test get incidents by team and status
+        try:
+            response = self.session.get(f"{BASE_URL}/v1/incidents/?team_id={self.test_team['id']}&status=triggered")
+            self.log_test("Get Incidents by Team and Status", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Incidents by Team and Status", False, f"Error: {e}")
+        
+        # Test assign user to team incident
+        if self.test_team_user:
+            try:
+                assign_data = {
+                    "user_id": self.test_team_user['id'],
+                    "role": "responder"
+                }
+                response = self.session.post(f"{BASE_URL}/v1/incidents/{team_incident['id']}/assign", json=assign_data)
+                self.log_test("Assign User to Team Incident", response.status_code == 200, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_test("Assign User to Team Incident", False, f"Error: {e}")
+        
+        # Test update incident team
+        try:
+            update_data = {"team_id": self.test_team['id']}
+            response = self.session.put(f"{BASE_URL}/v1/incidents/{team_incident['id']}", json=update_data)
+            self.log_test("Update Incident Team", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Update Incident Team", False, f"Error: {e}")
+    
+    def test_team_escalation_policies(self):
+        """Test team-based escalation policies."""
+        print("\n🔍 Testing Team Escalation Policies...")
+        
+        if not self.admin_token or not self.test_team:
+            print("⚠️  Skipping team escalation tests - no admin token or test team")
+            return
+        
+        # Create escalation policy with team conditions
+        timestamp = int(time.time())
+        policy_data = {
+            "name": f"Team Escalation Policy {timestamp}",
+            "description": "Escalation policy for team-based incidents",
+            "conditions": {
+                "severity": "high",
+                "team_id": self.test_team['id']
+            },
+            "steps": [
+                {
+                    "delay_minutes": 15,
+                    "actions": [{"type": "notify_team_lead", "target_roles": ["team_lead"]}]
+                },
+                {
+                    "delay_minutes": 30,
+                    "actions": [{"type": "notify_manager", "target_roles": ["manager"]}]
+                }
+            ],
+            "is_active": True
+        }
+        
+        try:
+            response = self.session.post(f"{BASE_URL}/v1/escalation/policies/", json=policy_data)
+            if response.status_code == 201:
+                team_policy = response.json()
+                self.log_test("Create Team Escalation Policy", True, f"Policy created: {team_policy['id']}")
+            else:
+                self.log_test("Create Team Escalation Policy", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Create Team Escalation Policy", False, f"Error: {e}")
+        
+        # Test get escalation policies
+        try:
+            response = self.session.get(f"{BASE_URL}/v1/escalation/policies/")
+            self.log_test("Get Escalation Policies", response.status_code == 200, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Escalation Policies", False, f"Error: {e}")
     
     def test_password_recovery(self):
         """Test password recovery endpoints."""
@@ -238,7 +487,6 @@ class E2ETestRunner:
         try:
             assign_data = {
                 "user_id": self.test_user['id'],
-                "incident_id": self.test_incident['id'],
                 "role": "responder"
             }
             response = self.session.post(f"{BASE_URL}/v1/incidents/{self.test_incident['id']}/assign", json=assign_data)
@@ -588,6 +836,12 @@ class E2ETestRunner:
             self.test_user_management_admin()
             self.test_notification_preferences_admin()
             self.test_escalation_management_admin()
+            
+            # Run new team and role system tests
+            self.test_team_management()
+            self.test_user_roles_and_teams()
+            self.test_team_based_incidents()
+            self.test_team_escalation_policies()
         
         self.results["end_time"] = time.time()
         self.results["duration"] = self.results["end_time"] - self.results["start_time"]

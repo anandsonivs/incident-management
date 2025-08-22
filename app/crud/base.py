@@ -23,7 +23,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db.query(self.model).offset(skip).limit(limit).all()
 
     def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
-        obj_in_data = obj_in.dict()
+        # Use model_dump() for Pydantic v2 compatibility
+        if hasattr(obj_in, 'model_dump'):
+            obj_in_data = obj_in.model_dump()
+        else:
+            obj_in_data = obj_in.dict()
+        
         # Filter out non-model fields
         model_fields = {field.name for field in self.model.__table__.columns}
         filtered_data = {k: v for k, v in obj_in_data.items() if k in model_fields}
@@ -44,7 +49,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
-            update_data = obj_in.dict(exclude_unset=True)
+            # Use model_dump() for Pydantic v2 compatibility
+            if hasattr(obj_in, 'model_dump'):
+                update_data = obj_in.model_dump(exclude_unset=True)
+            else:
+                update_data = obj_in.dict(exclude_unset=True)
         for field in obj_data:
             if field in update_data:
                 setattr(db_obj, field, update_data[field])

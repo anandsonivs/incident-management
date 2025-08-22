@@ -3,6 +3,7 @@ import logging
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional, List, Any, Dict, Type, TypeVar, get_type_hints, TYPE_CHECKING
 from datetime import datetime
+from enum import Enum
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -14,6 +15,19 @@ from .types import ModelType, CreateSchemaType, UpdateSchemaType
 if TYPE_CHECKING:
     from .incident import Assignment, Comment, IncidentWithRelations
 
+class UserRole(str, Enum):
+    """User role enumeration."""
+    USER = "user"
+    ONCALL_ENGINEER = "oncall_engineer"
+    TEAM_LEAD = "team_lead"
+    MANAGER = "manager"
+    VP = "vp"
+    CTO = "cto"
+    ADMIN = "admin"
+    
+    def __str__(self):
+        return self.value
+
 class UserBase(BaseModel):
     """Base user schema with common fields."""
     email: EmailStr = Field(..., description="User's email address, must be unique")
@@ -21,6 +35,8 @@ class UserBase(BaseModel):
     phone_number: Optional[str] = Field(None, description="User's phone number")
     is_active: bool = Field(True, description="Whether the user account is active")
     is_superuser: bool = Field(False, description="Whether the user has superuser privileges")
+    team_id: Optional[int] = Field(None, description="ID of the team the user belongs to")
+    role: UserRole = Field(default="user", description="User's role in the system")
     
     model_config = ConfigDict(
         from_attributes=True,
@@ -41,7 +57,9 @@ class UserCreate(UserBase):
                 "full_name": "John Doe",
                 "phone_number": "+1234567890",
                 "is_active": True,
-                "is_superuser": False
+                "is_superuser": False,
+                "team_id": 1,
+                "role": "user"
             }
         }
     )
@@ -58,6 +76,8 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     is_active: Optional[bool] = None
     is_superuser: Optional[bool] = None
+    team_id: Optional[int] = None
+    role: Optional[UserRole] = None
     
     model_config = ConfigDict(
         from_attributes=True,

@@ -1,11 +1,12 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
 from app.db.session import get_db
+from app.models.user import UserRole
 
 router = APIRouter()
 
@@ -14,12 +15,21 @@ def read_users(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
+    team_id: Optional[int] = Query(None, description="Filter by team ID"),
+    role: Optional[UserRole] = Query(None, description="Filter by user role"),
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Retrieve users.
+    Retrieve users with optional filtering by team and role.
     """
-    users = crud.user.get_multi(db, skip=skip, limit=limit)
+    if team_id and role:
+        users = crud.user.get_by_role_and_team(db, role=role, team_id=team_id)
+    elif team_id:
+        users = crud.user.get_by_team(db, team_id=team_id)
+    elif role:
+        users = crud.user.get_by_role(db, role=role)
+    else:
+        users = crud.user.get_multi(db, skip=skip, limit=limit)
     return users
 
 @router.post("/", status_code=status.HTTP_201_CREATED)

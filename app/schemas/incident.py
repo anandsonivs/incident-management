@@ -23,19 +23,26 @@ class IncidentStatus(str, Enum):
     ACKNOWLEDGED = "acknowledged"
     RESOLVED = "resolved"
     SNOOZED = "snoozed"
+    
+    def __str__(self):
+        return self.value
 
 class IncidentSeverity(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
+    
+    def __str__(self):
+        return self.value
 
 class IncidentBase(BaseModel):
     title: str
     description: Optional[str] = None
-    status: IncidentStatus = IncidentStatus.TRIGGERED
-    severity: IncidentSeverity = IncidentSeverity.MEDIUM
+    status: IncidentStatus = Field(default="triggered")
+    severity: IncidentSeverity = Field(default="medium")
     service: Optional[str] = None
+    team_id: Optional[int] = Field(None, description="ID of the team responsible for this incident")
     alert_id: Optional[str] = None
     metadata: Dict[str, Any] = Field(default={})
 
@@ -49,6 +56,7 @@ class IncidentUpdate(BaseModel):
     severity: Optional[IncidentSeverity] = None
     title: Optional[str] = None
     description: Optional[str] = None
+    team_id: Optional[int] = Field(None, description="ID of the team responsible for this incident")
     
     def model_dump(self, **kwargs):
         """Convert model to dictionary, excluding unset fields by default."""
@@ -108,6 +116,15 @@ class AssignmentBase(BaseModel):
 class AssignmentCreate(AssignmentBase):
     """Schema for creating a new assignment."""
     pass
+
+class AssignmentRequest(BaseModel):
+    """Schema for assignment request (without incident_id since it comes from URL)."""
+    user_id: int
+    role: Optional[str] = "responder"
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 class Assignment(BaseModel):
     """Schema for returning an assignment with system fields."""

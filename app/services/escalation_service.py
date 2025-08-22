@@ -34,15 +34,23 @@ class EscalationService:
         conditions = policy.conditions or {}
         severity_ok = True
         service_ok = True
+        team_ok = True
+        
         if "severity" in conditions:
             severities = set(map(lambda x: str(x).lower(), conditions.get("severity", [])))
             inc_sev = incident.severity
             inc_sev_str = inc_sev.name.lower() if hasattr(inc_sev, 'name') else str(inc_sev).lower()
             severity_ok = inc_sev_str in severities
+            
         if "service" in conditions:
             services = set(map(str, conditions.get("service", [])))
             service_ok = (incident.service in services)
-        return severity_ok and service_ok
+            
+        if "team_id" in conditions:
+            team_ids = set(map(int, conditions.get("team_id", [])))
+            team_ok = (incident.team_id in team_ids)
+            
+        return severity_ok and service_ok and team_ok
 
     def _get_matching_policies(self, incident: models.Incident) -> List[models.EscalationPolicy]:
         """Get escalation policies that match the incident's conditions."""
@@ -53,6 +61,55 @@ class EscalationService:
             # Fallback to global CRUD if a different CRUD is passed
             active = crud.escalation_policy.get_active_policies(self.db)
         return [p for p in active if self._policy_matches_incident(p, incident)]
+    
+    def _get_users_by_role_and_team(self, role: str, team_id: int) -> List[models.User]:
+        """Get users by role and team."""
+        from app.models.user import UserRole
+        
+        # Map escalation targets to user roles
+        role_mapping = {
+            "team_lead": UserRole.TEAM_LEAD,
+            "manager": UserRole.MANAGER,
+            "vp": UserRole.VP,
+            "cto": UserRole.CTO,
+            "oncall_engineer": UserRole.ONCALL_ENGINEER,
+        }
+        
+        user_role = role_mapping.get(role)
+        if not user_role:
+            return []
+        
+        return crud.user.get_by_role_and_team(self.db, role=user_role, team_id=team_id)
+    
+    def _get_escalation_targets(self, incident: models.Incident, target: str) -> List[models.User]:
+        """Get escalation targets based on role and team."""
+        if not incident.team_id:
+            logger.warning(f"Incident {incident.id} has no team assigned")
+            return []
+        
+        # Handle special targets
+        if target == "assignees":
+            return [assignment.user for assignment in incident.assignments]
+        elif target == "team_lead":
+            return self._get_users_by_role_and_team("team_lead", incident.team_id)
+        elif target == "manager":
+            return self._get_users_by_role_and_team("manager", incident.team_id)
+        elif target == "vp":
+            return self._get_users_by_role_and_team("vp", incident.team_id)
+        elif target == "cto":
+            return self._get_users_by_role_and_team("cto", incident.team_id)
+        elif target == "oncall_engineer":
+            return self._get_users_by_role_and_team("oncall_engineer", incident.team_id)
+        else:
+            # Try to find user by email or ID
+            try:
+                user_id = int(target)
+                user = crud.user.get(self.db, id=user_id)
+                return [user] if user else []
+            except ValueError:
+                # Assume it's an email
+                user = crud.user.get_by_email(self.db, email=target)
+                return [user] if user else []
     
     async def process_escalation_policy(
         self, incident: models.Incident, policy: models.EscalationPolicy
@@ -126,30 +183,38 @@ class EscalationService:
         recipients = recipients or ["assignees"]
         
         for recipient in recipients:
-            await self.notification_service.send_notification(
-                recipient=recipient,
-                message=message,
-                incident_id=incident.id,
-                action_type="escalation",
-                metadata={"step": step},
-            )
+            # Get actual users for this target
+            target_users = self._get_escalation_targets(incident, recipient)
+            
+            for user in target_users:
+                await self.notification_service.send_notification(
+                    recipient=user.email,
+                    message=message,
+                    incident_id=incident.id,
+                    action_type="escalation",
+                    metadata={"step": step, "user_id": user.id},
+                )
     
     async def _process_assign_action(
         self, incident: models.Incident, action: Dict[str, Any], step: Dict[str, Any]
     ) -> None:
         """Process an assign action."""
-        assignee_id = action.get("assignee_id")
-        if not assignee_id:
+        target = action.get("target")
+        if not target:
             return
         
-        # Ensure assignment exists
-        existing = crud.incident.get_assignment_by_incident_and_user(
-            self.db, incident_id=incident.id, user_id=assignee_id
-        )
-        if not existing:
-            await crud.incident.assign_user(
-                self.db, incident_id=incident.id, user_id=assignee_id
+        # Get users for this target
+        target_users = self._get_escalation_targets(incident, target)
+        
+        for user in target_users:
+            # Ensure assignment exists
+            existing = crud.incident.get_assignment_by_incident_and_user(
+                self.db, incident_id=incident.id, user_id=user.id
             )
+            if not existing:
+                await crud.incident.assign_user(
+                    self.db, incident_id=incident.id, user_id=user.id
+                )
     
     async def _process_status_change_action(
         self, incident: models.Incident, action: Dict[str, Any], step: Dict[str, Any]

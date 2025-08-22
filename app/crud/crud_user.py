@@ -1,16 +1,38 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserUpdate
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
         return db.query(User).filter(User.email == email).first()
+
+    def get_by_role_and_team(self, db: Session, *, role: UserRole, team_id: int) -> List[User]:
+        """Get users by role and team."""
+        return db.query(User).filter(
+            User.role == role,
+            User.team_id == team_id,
+            User.is_active == True
+        ).all()
+    
+    def get_by_team(self, db: Session, *, team_id: int) -> List[User]:
+        """Get all users in a team."""
+        return db.query(User).filter(
+            User.team_id == team_id,
+            User.is_active == True
+        ).all()
+    
+    def get_by_role(self, db: Session, *, role: UserRole) -> List[User]:
+        """Get all users with a specific role."""
+        return db.query(User).filter(
+            User.role == role,
+            User.is_active == True
+        ).all()
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
         db_obj = User(
@@ -19,6 +41,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             full_name=obj_in.full_name,
             phone_number=obj_in.phone_number,
             is_superuser=obj_in.is_superuser,
+            team_id=obj_in.team_id,
+            role=obj_in.role,
         )
         db.add(db_obj)
         db.commit()

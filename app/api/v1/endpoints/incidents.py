@@ -9,7 +9,7 @@ from app.db.session import get_db
 from app.models.incident import IncidentStatus, TimelineEventType
 from app.schemas.incident import (
     Incident, IncidentCreate, IncidentUpdate, IncidentWithRelations,
-    Assignment, AssignmentCreate, Comment, CommentCreate, TimelineEvent
+    Assignment, AssignmentCreate, AssignmentRequest, Comment, CommentCreate, TimelineEvent
 )
 
 router = APIRouter()
@@ -22,6 +22,7 @@ def read_incidents(
     status: Optional[IncidentStatus] = None,
     service: Optional[str] = None,
     severity: Optional[str] = None,
+    team_id: Optional[int] = None,
     current_user: models.User = Depends(deps.get_current_active_user),
 ):
     """
@@ -35,6 +36,8 @@ def read_incidents(
         query = query.filter(models.Incident.service == service)
     if severity:
         query = query.filter(models.Incident.severity == severity)
+    if team_id:
+        query = query.filter(models.Incident.team_id == team_id)
     
     return query.offset(skip).limit(limit).all()
 
@@ -222,7 +225,7 @@ def assign_incident(
     *,
     db: Session = Depends(get_db),
     incident_id: int,
-    assignment_in: AssignmentCreate,
+    assignment_in: AssignmentRequest,
     current_user: models.User = Depends(deps.get_current_active_user),
 ):
     """

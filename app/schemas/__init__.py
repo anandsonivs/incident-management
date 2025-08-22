@@ -18,6 +18,15 @@ from .base import BaseSchema
 
 # Import enums first (no dependencies)
 from .incident import IncidentStatus, IncidentSeverity
+from .user import UserRole
+
+# Import team schemas (they only depend on base schemas)
+from .team import (
+    TeamBase,
+    TeamCreate,
+    TeamUpdate,
+    Team,
+)
 
 # Import user schemas (they only depend on base schemas)
 from .user import (
@@ -41,6 +50,7 @@ from .incident import (
     IncidentWithRelations,
     AssignmentBase,
     AssignmentCreate,
+    AssignmentRequest,
     Assignment,
     CommentBase,
     CommentCreate,
@@ -70,14 +80,17 @@ __all__ = [
     # Base schemas
     'BaseModel', 'BaseSchema', 'ModelType', 'CreateSchemaType', 'UpdateSchemaType',
     
+    # Team schemas
+    'Team', 'TeamBase', 'TeamCreate', 'TeamUpdate',
+    
     # User schemas
     'User', 'UserBase', 'UserCreate', 'UserInDBBase', 'UserUpdate', 'UserWithRelations',
-    'Token', 'TokenPayload', 'Msg',
+    'UserRole', 'Token', 'TokenPayload', 'Msg',
     
     # Incident schemas
     'IncidentBase', 'IncidentCreate', 'IncidentUpdate', 'IncidentInDBBase', 'IncidentWithRelations',
     'IncidentStatus', 'IncidentSeverity',
-    'AssignmentBase', 'AssignmentCreate', 'Assignment',
+    'AssignmentBase', 'AssignmentCreate', 'AssignmentRequest', 'Assignment',
     'CommentBase', 'CommentCreate', 'Comment',
     'TimelineEvent', 'TimelineEventBase', 'TimelineEventCreate', 'TimelineEventType',
     

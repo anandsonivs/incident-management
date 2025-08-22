@@ -6,7 +6,8 @@ from app.db.session import engine, SessionLocal
 
 # Import all models here so they're properly registered with SQLAlchemy's metadata
 # This is necessary for 'autogenerate' to work properly
-from app.models.user import User
+from app.models.team import Team
+from app.models.user import User, UserRole
 from app.models.incident import (
     Incident, IncidentStatus, IncidentSeverity, IncidentAssignment, 
     IncidentComment, TimelineEvent, TimelineEventType

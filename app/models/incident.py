@@ -27,6 +27,7 @@ class Incident(Base):
     severity = Column(Enum(IncidentSeverity), default=IncidentSeverity.MEDIUM, nullable=False)
     source = Column(String, default="elastic_apm")
     service = Column(String, index=True)
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
     alert_id = Column(String, unique=True, index=True)  # External alert ID from Elastic APM
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -36,6 +37,7 @@ class Incident(Base):
     metadata_ = Column("metadata", JSON, default=dict)
     
     # Relationships
+    team = relationship("Team", back_populates="incidents")
     assignments = relationship("IncidentAssignment", back_populates="incident")
     comments = relationship("IncidentComment", back_populates="incident")
     timeline_events = relationship("TimelineEvent", back_populates="incident")

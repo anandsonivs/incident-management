@@ -1,6 +1,6 @@
 {
-  "total_tests": 41,
-  "passed": 41,
+  "total_tests": 60,
+  "passed": 60,
   "failed": 0,
   "errors": 0,
   "test_details": [
@@ -208,9 +208,104 @@
       "test": "Delete Escalation Policy (Admin)",
       "status": "PASSED",
       "error": null
+    },
+    {
+      "test": "Create Team",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Get All Teams",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Get Team",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Update Team",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Create Duplicate Team",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Get Non-existent Team",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Create User with Team and Role",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Get Users by Role",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Get Users by Team",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Get Users by Role and Team",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Create User with Invalid Role",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Update User Role and Team",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Create Team Incident",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Get Incidents by Team",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Get Incidents by Team and Status",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Assign User to Team Incident",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Update Incident Team",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Create Team Escalation Policy",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "test": "Get Escalation Policies",
+      "status": "PASSED",
+      "error": null
     }
   ],
-  "start_time": 1755850585.961935,
-  "end_time": 1755850587.089055,
-  "duration": 1.127120018005371
+  "start_time": 1755860639.358021,
+  "end_time": 1755860640.782924,
+  "duration": 1.4249029159545898
 }

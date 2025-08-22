@@ -148,6 +148,16 @@ def auth_headers(test_token):
     """Return authorization headers with a valid JWT token."""
     return {"Authorization": f"Bearer {test_token}"}
 
+
+@pytest.fixture
+def superuser_token_headers(test_user, db):
+    """Return authorization headers with a superuser JWT token."""
+    # Create a superuser token
+    superuser_token = create_access_token(
+        subject=str(test_user.id)
+    )
+    return {"Authorization": f"Bearer {superuser_token}"}
+
 @pytest.fixture
 def test_incident(test_user):
     """Create a test incident."""
