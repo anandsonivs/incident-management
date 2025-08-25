@@ -321,7 +321,311 @@ The project includes a GitHub Actions workflow (`.github/workflows/tests.yml`) t
 4. Code coverage check (minimum 80% required)
 5. Code style checks (black, isort, flake8)
 
-## Manual Testing
+## Manual Testing with curl Commands
+
+### Starting the Server
+
+Before running the curl commands, start the development server:
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Start the server
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+The server will be available at:
+- **API Base URL**: `http://localhost:8000`
+- **Interactive Documentation**: `http://localhost:8000/docs`
+- **OpenAPI Schema**: `http://localhost:8000/v1/openapi.json`
+- **Health Check**: `http://localhost:8000/health`
+
+### Complete API Testing with curl Commands
+
+This section provides comprehensive curl commands to test all API endpoints manually.
+
+#### 1. Health & OpenAPI Documentation
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# OpenAPI documentation
+curl http://localhost:8000/docs
+
+# OpenAPI JSON schema
+curl http://localhost:8000/v1/openapi.json
+```
+
+#### 2. Authentication & User Management
+```bash
+# Create a new user
+curl -X POST http://localhost:8000/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "testuser@example.com",
+    "password": "testpass123",
+    "full_name": "Test User",
+    "role": "team_lead",
+    "is_superuser": false
+  }'
+
+# Login to get access token
+curl -X POST http://localhost:8000/v1/auth/login/access-token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=testuser@example.com&password=testpass123"
+
+# Test token validation (replace YOUR_TOKEN with the token from login)
+curl -X POST http://localhost:8000/v1/auth/login/test-token \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+#### 3. Team Management
+```bash
+# Create a team (requires authentication)
+curl -X POST http://localhost:8000/v1/teams/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "name": "Platform Team",
+    "description": "Platform infrastructure team",
+    "is_active": true
+  }'
+
+# Get all teams
+curl -X GET http://localhost:8000/v1/teams/ \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Get specific team (replace TEAM_ID with actual ID)
+curl -X GET http://localhost:8000/v1/teams/TEAM_ID \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+#### 4. User Management with Teams
+```bash
+# Create user with team assignment
+curl -X POST http://localhost:8000/v1/users/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "email": "engineer@example.com",
+    "password": "engineer123",
+    "full_name": "John Engineer",
+    "role": "oncall_engineer",
+    "team_id": TEAM_ID,
+    "is_superuser": false
+  }'
+
+# Get users by role
+curl -X GET "http://localhost:8000/v1/users/?role=team_lead" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Get users by team
+curl -X GET "http://localhost:8000/v1/users/?team_id=TEAM_ID" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+#### 5. Incident Management
+```bash
+# Create an incident
+curl -X POST http://localhost:8000/v1/incidents/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "title": "Database Connection Error",
+    "description": "Unable to connect to the database",
+    "severity": "high",
+    "service": "api-service",
+    "team_id": TEAM_ID
+  }'
+
+# Get all incidents
+curl -X GET http://localhost:8000/v1/incidents/ \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Get incidents by team
+curl -X GET "http://localhost:8000/v1/incidents/?team_id=TEAM_ID" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Get specific incident (replace INCIDENT_ID with actual ID)
+curl -X GET http://localhost:8000/v1/incidents/INCIDENT_ID \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Update incident
+curl -X PUT http://localhost:8000/v1/incidents/INCIDENT_ID \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "title": "Database Connection Error - Updated",
+    "description": "Connection restored",
+    "status": "acknowledged"
+  }'
+
+# Acknowledge incident
+curl -X POST http://localhost:8000/v1/incidents/INCIDENT_ID/acknowledge \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Resolve incident
+curl -X POST http://localhost:8000/v1/incidents/INCIDENT_ID/resolve \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+#### 6. Incident Collaboration
+```bash
+# Assign incident to user
+curl -X POST http://localhost:8000/v1/incidents/INCIDENT_ID/assign \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "user_id": USER_ID,
+    "role": "responder"
+  }'
+
+# Add comment to incident
+curl -X POST http://localhost:8000/v1/incidents/INCIDENT_ID/comments \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "content": "Investigating the issue..."
+  }'
+
+# Get incident timeline
+curl -X GET http://localhost:8000/v1/incidents/INCIDENT_ID/timeline \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+#### 7. Escalation Management
+```bash
+# Create escalation policy (requires admin)
+curl -X POST http://localhost:8000/v1/escalation/policies/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ADMIN_TOKEN" \
+  -d '{
+    "name": "High Severity Escalation",
+    "description": "Escalate high severity incidents",
+    "conditions": {"severity": "high"},
+    "actions": [
+      {
+        "type": "notify",
+        "target": "team_lead",
+        "delay_minutes": 5
+      },
+      {
+        "type": "notify", 
+        "target": "manager",
+        "delay_minutes": 15
+      }
+    ]
+  }'
+
+# Get escalation policies
+curl -X GET http://localhost:8000/v1/escalation/policies/ \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Trigger escalation for incident
+curl -X POST http://localhost:8000/v1/escalation/incidents/INCIDENT_ID/escalate \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+#### 8. Elastic APM Webhook
+```bash
+# Test Elastic webhook (no authentication required)
+curl -X POST http://localhost:8000/v1/alerts/elastic \
+  -H "Content-Type: application/json" \
+  -d '{
+    "alert_name": "High CPU Usage Alert",
+    "message": "CPU usage is above 90% for the last 5 minutes",
+    "severity": "high",
+    "service": {
+      "name": "api-service",
+      "environment": "production",
+      "version": "1.0.0"
+    },
+    "alert_id": "cpu-alert-123",
+    "state": {
+      "state": "active",
+      "timestamp": "2024-01-20T10:30:00Z"
+    },
+    "metadata": {
+      "cpu_percentage": 95.2,
+      "threshold": 90.0
+    },
+    "tags": {
+      "environment": "production",
+      "team": "platform"
+    }
+  }'
+```
+
+#### 9. Notification Preferences
+```bash
+# Get current user notification preferences
+curl -X GET http://localhost:8000/v1/notification-preferences/me \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Update notification preference
+curl -X PUT http://localhost:8000/v1/notification-preferences/me/email \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "channel": "email",
+    "enabled": true
+  }'
+```
+
+#### 10. Admin Operations
+```bash
+# Get all users (admin only)
+curl -X GET http://localhost:8000/v1/users/ \
+  -H "Authorization: Bearer ADMIN_TOKEN"
+
+# Create admin user
+curl -X POST http://localhost:8000/v1/users/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ADMIN_TOKEN" \
+  -d '{
+    "email": "admin@example.com",
+    "password": "admin123",
+    "full_name": "System Admin",
+    "role": "admin",
+    "is_superuser": true
+  }'
+```
+
+### Quick Test Sequence
+
+Here's a quick sequence to test the main flow:
+
+```bash
+# 1. Create a user and get token
+TOKEN=$(curl -s -X POST http://localhost:8000/v1/auth/login/access-token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=testuser@example.com&password=testpass123" | jq -r '.access_token')
+
+# 2. Create a team
+TEAM_ID=$(curl -s -X POST http://localhost:8000/v1/teams/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"name": "Test Team", "description": "Test team", "is_active": true}' | jq -r '.id')
+
+# 3. Create an incident
+INCIDENT_ID=$(curl -s -X POST http://localhost:8000/v1/incidents/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d "{\"title\": \"Test Incident\", \"description\": \"Test\", \"severity\": \"high\", \"team_id\": $TEAM_ID}" | jq -r '.id')
+
+# 4. Test the incident
+curl -X GET http://localhost:8000/v1/incidents/$INCIDENT_ID \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Testing Notes
+
+- Replace `YOUR_TOKEN`, `ADMIN_TOKEN`, `TEAM_ID`, `USER_ID`, `INCIDENT_ID` with actual values
+- The server should be running on `http://localhost:8000`
+- All endpoints return JSON responses
+- Use `jq` for pretty-printing JSON responses: `curl ... | jq`
+- For Windows PowerShell, use backticks (`) instead of backslashes (\) for line continuation
 
 ### 1. Testing Escalation Policies
 
