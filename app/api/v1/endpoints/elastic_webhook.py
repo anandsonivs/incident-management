@@ -8,6 +8,7 @@ from app import crud, models, schemas
 from app.db.session import get_db
 from app.models.incident import IncidentStatus, TimelineEventType
 from app.schemas.incident import IncidentCreate
+from app.schemas.elastic_webhook import ElasticWebhookPayload, ElasticWebhookResponse
 from app.core.config import get_settings
 
 router = APIRouter()
@@ -34,8 +35,11 @@ def extract_incident_data(alert_data: Dict[str, Any]) -> Dict[str, Any]:
             incident_data["description"] = alert_data["message"]
         
         # Extract service information
-        if "service" in alert_data and "name" in alert_data["service"]:
-            incident_data["service"] = alert_data["service"]["name"]
+        if "service" in alert_data:
+            if isinstance(alert_data["service"], dict) and "name" in alert_data["service"]:
+                incident_data["service"] = alert_data["service"]["name"]
+            elif isinstance(alert_data["service"], str):
+                incident_data["service"] = alert_data["service"]
         
         # Extract severity if available
         if "severity" in alert_data:
@@ -59,24 +63,29 @@ def extract_incident_data(alert_data: Dict[str, Any]) -> Dict[str, Any]:
         incident_data["metadata"]["raw_alert"] = alert_data
         return incident_data
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=ElasticWebhookResponse)
 async def handle_elastic_webhook(
-    request: Request,
+    webhook_data: ElasticWebhookPayload,
     db: Session = Depends(get_db)
 ):
-    settings = get_settings()
     """
     Handle incoming webhooks from Elastic APM.
     This endpoint processes alerts and creates/updates incidents accordingly.
+    
+    **Expected Payload:**
+    - `alert_name`: Name of the alert
+    - `message`: Alert description
+    - `severity`: Alert severity (critical, high, medium, low)
+    - `service`: Service information including name
+    - `alert_id`: Unique alert identifier
+    - `state`: Alert state (active, resolved, recovered)
+    - `metadata`: Additional alert metadata
+    - `tags`: Alert tags
     """
-    try:
-        # Parse the incoming alert data
-        alert_data = await request.json()
-    except json.JSONDecodeError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid JSON payload"
-        )
+    settings = get_settings()
+    
+    # Convert Pydantic model to dict for processing
+    alert_data = webhook_data.dict() if hasattr(webhook_data, 'dict') else webhook_data.model_dump()
     
     # Extract and transform the alert data
     incident_data = extract_incident_data(alert_data)
@@ -95,7 +104,7 @@ async def handle_elastic_webhook(
         # Handle recovery/resolved alerts
         if existing_incident and existing_incident.status != IncidentStatus.RESOLVED:
             # Update the existing incident as resolved
-            incident = await crud.incident.update_status(
+            incident = crud.incident.update_status(
                 db, db_obj=existing_incident, status=IncidentStatus.RESOLVED
             )
             
@@ -108,9 +117,16 @@ async def handle_elastic_webhook(
                 user_id=None  # System action
             )
             
-            return {"status": "incident_resolved", "incident_id": incident.id}
+            return ElasticWebhookResponse(
+                status="incident_resolved", 
+                incident_id=incident.id,
+                message="Existing incident marked as resolved"
+            )
         
-        return {"status": "no_matching_active_incident"}
+        return ElasticWebhookResponse(
+            status="no_matching_active_incident",
+            message="No active incident found for this alert"
+        )
     
     # This is a new alert or an update to an existing one
     if existing_incident:
@@ -138,14 +154,22 @@ async def handle_elastic_webhook(
             crud.incident.add_timeline_event(
                 db,
                 incident_id=incident.id,
-                event_type=TimelineEventType.UPDATED,
+                event_type=TimelineEventType.STATUS_CHANGED,
                 data={"source": "elastic_apm", "alert_id": alert_id, "updates": update_data},
                 user_id=None  # System action
             )
             
-            return {"status": "incident_updated", "incident_id": incident.id}
+            return ElasticWebhookResponse(
+                status="incident_updated", 
+                incident_id=incident.id,
+                message="Existing incident updated with new alert data"
+            )
         
-        return {"status": "no_changes", "incident_id": existing_incident.id}
+        return ElasticWebhookResponse(
+            status="no_changes", 
+            incident_id=existing_incident.id,
+            message="No changes made to existing incident"
+        )
     
     # Create a new incident
     incident_in = IncidentCreate(
@@ -153,7 +177,6 @@ async def handle_elastic_webhook(
         description=incident_data["description"],
         severity=incident_data["severity"],
         service=incident_data["service"],
-        metadata=incident_data.get("metadata", {}),
         alert_id=alert_id
     )
     
@@ -168,4 +191,8 @@ async def handle_elastic_webhook(
         user_id=None  # System action
     )
     
-    return {"status": "incident_created", "incident_id": incident.id}
+    return ElasticWebhookResponse(
+        status="incident_created", 
+        incident_id=incident.id,
+        message="New incident created from Elastic alert"
+    )

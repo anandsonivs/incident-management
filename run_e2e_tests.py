@@ -642,16 +642,30 @@ class E2ETestRunner:
         
         # Test Elastic webhook
         webhook_data = {
-            "alert": {
-                "name": "Test Alert",
-                "severity": "high",
-                "service": "test-service"
-            }
+            "alert_name": "Test Alert",
+            "message": "Test alert message",
+            "severity": "high",
+            "service": {"name": "test-service"},
+            "alert_id": "test-alert-123",
+            "state": {"state": "active"},
+            "metadata": {"test": True},
+            "tags": {"environment": "test"}
         }
         
         try:
             response = self.session.post(f"{BASE_URL}/v1/alerts/elastic", json=webhook_data)
-            self.log_test("Elastic Webhook", response.status_code == 201, f"Status: {response.status_code}")
+            if response.status_code == 201:
+                response_data = response.json()
+                # Validate response structure
+                success = (
+                    "status" in response_data and 
+                    "incident_id" in response_data and 
+                    "message" in response_data and
+                    response_data["status"] in ["incident_created", "incident_updated", "incident_resolved", "no_changes"]
+                )
+                self.log_test("Elastic Webhook", success, f"Status: {response.status_code}, Response: {response_data}")
+            else:
+                self.log_test("Elastic Webhook", False, f"Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             self.log_test("Elastic Webhook", False, f"Error: {e}")
     

@@ -75,6 +75,14 @@ from .escalation import (
     EscalationEventStatus,
 )
 
+# Import elastic webhook schemas
+from .elastic_webhook import (
+    ElasticService,
+    ElasticAlertState,
+    ElasticWebhookPayload,
+    ElasticWebhookResponse,
+)
+
 # Re-export everything for easier imports
 __all__ = [
     # Base schemas
@@ -97,5 +105,8 @@ __all__ = [
     # Escalation schemas
     'EscalationPolicy', 'EscalationPolicyCreate', 'EscalationPolicyUpdate',
     'EscalationEvent', 'EscalationEventCreate', 'EscalationEventStatus',
-    'EscalationEventBase', 'EscalationEventInDBBase'
+    'EscalationEventBase', 'EscalationEventInDBBase',
+    
+    # Elastic webhook schemas
+    'ElasticService', 'ElasticAlertState', 'ElasticWebhookPayload', 'ElasticWebhookResponse'
 ]

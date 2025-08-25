@@ -41,7 +41,7 @@ class CRUDIncident(CRUDBase[Incident, IncidentCreate, IncidentUpdate]):
         self, db: Session, *, obj_in: IncidentCreate, owner_id: int
     ) -> Incident:
         db_obj = self.model(
-            **obj_in.dict(),
+            **obj_in.model_dump(),
             created_by=owner_id,
         )
         db.add(db_obj)

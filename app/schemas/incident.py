@@ -44,12 +44,10 @@ class IncidentBase(BaseModel):
     service: Optional[str] = None
     team_id: Optional[int] = Field(None, description="ID of the team responsible for this incident")
     alert_id: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default={})
+    metadata: Dict[str, Any] = Field(default={}, alias="metadata_")
 
 class IncidentCreate(IncidentBase):
-    def model_dump(self, **kwargs):
-        """Convert model to dictionary."""
-        return self.dict(**kwargs)
+    pass
 
 class IncidentUpdate(BaseModel):
     status: Optional[IncidentStatus] = None
@@ -58,10 +56,6 @@ class IncidentUpdate(BaseModel):
     description: Optional[str] = None
     team_id: Optional[int] = Field(None, description="ID of the team responsible for this incident")
     
-    def model_dump(self, **kwargs):
-        """Convert model to dictionary, excluding unset fields by default."""
-        kwargs.setdefault('exclude_unset', True)
-        return self.dict(**kwargs)
     metadata: Optional[Dict[str, Any]] = None
 
 class IncidentInDBBase(IncidentBase):
@@ -74,15 +68,26 @@ class IncidentInDBBase(IncidentBase):
     
     # Ensure status has a default value from IncidentStatus enum
     status: IncidentStatus = IncidentStatus.TRIGGERED
-    
-    def model_dump(self, **kwargs):
-        """Convert model to dictionary."""
-        return self.dict(**kwargs)
 
-    class Config:
-        orm_mode = True
-        fields = {"metadata": {"alias": "metadata_"}}
-        use_enum_values = True  # This will store the enum values in the database
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "title": "Database Connection Error",
+                "description": "Unable to connect to the database",
+                "status": "triggered",
+                "severity": "high",
+                "service": "api-service",
+                "team_id": 1,
+                "alert_id": "db-error-123",
+                "created_at": "2024-01-20T10:30:00Z",
+                "updated_at": "2024-01-20T10:30:00Z",
+                "metadata_": {"error_code": "ECONNREFUSED", "retry_count": 3}
+            }
+        }
+    )
 
 class Incident(IncidentInDBBase):
     pass
@@ -94,10 +99,6 @@ class IncidentWithRelations(IncidentInDBBase):
     
     # Ensure status has a default value from IncidentStatus enum
     status: IncidentStatus = IncidentStatus.TRIGGERED
-    
-    def model_dump(self, **kwargs):
-        """Convert model to dictionary."""
-        return self.dict(**kwargs)
     
     class Config:
         orm_mode = True

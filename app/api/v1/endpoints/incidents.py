@@ -14,6 +14,25 @@ from app.schemas.incident import (
 
 router = APIRouter()
 
+def incident_to_dict(incident):
+    """Convert incident model to dictionary for API response."""
+    return {
+        "id": incident.id,
+        "title": incident.title,
+        "description": incident.description,
+        "status": incident.status,
+        "severity": incident.severity,
+        "service": incident.service,
+        "team_id": incident.team_id,
+        "alert_id": incident.alert_id,
+        "metadata_": incident.metadata_,
+        "created_at": incident.created_at,
+        "updated_at": incident.updated_at,
+        "resolved_at": incident.resolved_at,
+        "acknowledged_at": incident.acknowledged_at,
+        "snoozed_until": incident.snoozed_until
+    }
+
 @router.get("/", response_model=List[Incident])
 def read_incidents(
     db: Session = Depends(get_db),
@@ -39,7 +58,8 @@ def read_incidents(
     if team_id:
         query = query.filter(models.Incident.team_id == team_id)
     
-    return query.offset(skip).limit(limit).all()
+    incidents = query.offset(skip).limit(limit).all()
+    return [incident_to_dict(incident) for incident in incidents]
 
 @router.post("/", response_model=Incident, status_code=status.HTTP_201_CREATED)
 def create_incident(
@@ -62,7 +82,7 @@ def create_incident(
         user_id=current_user.id
     )
     
-    return incident
+    return incident_to_dict(incident)
 
 @router.get("/{incident_id}", response_model=IncidentWithRelations)
 def read_incident(
@@ -79,7 +99,7 @@ def read_incident(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Incident not found",
         )
-    return incident
+    return incident_to_dict(incident)
 
 @router.put("/{incident_id}", response_model=Incident)
 def update_incident(
@@ -117,7 +137,7 @@ def update_incident(
         escalation_service = get_escalation_service(db)
         escalation_service.check_and_escalate_incident(updated)
     
-    return updated
+    return incident_to_dict(updated)
 
 @router.post("/{incident_id}/acknowledge", response_model=Incident)
 def acknowledge_incident(
@@ -137,7 +157,7 @@ def acknowledge_incident(
         )
     
     if incident.status == IncidentStatus.ACKNOWLEDGED:
-        return incident
+        return incident_to_dict(incident)
     
     incident = crud.incident.update_status(
         db, db_obj=incident, status=IncidentStatus.ACKNOWLEDGED
@@ -151,7 +171,7 @@ def acknowledge_incident(
         user_id=current_user.id
     )
     
-    return incident
+    return incident_to_dict(incident)
 
 @router.post("/{incident_id}/resolve", response_model=Incident)
 def resolve_incident(
@@ -171,7 +191,7 @@ def resolve_incident(
         )
     
     if incident.status == IncidentStatus.RESOLVED:
-        return incident
+        return incident_to_dict(incident)
     
     incident = crud.incident.update_status(
         db, db_obj=incident, status=IncidentStatus.RESOLVED
@@ -185,7 +205,7 @@ def resolve_incident(
         user_id=current_user.id
     )
     
-    return incident
+    return incident_to_dict(incident)
 
 @router.post("/{incident_id}/snooze", response_model=Incident)
 def snooze_incident(
@@ -218,7 +238,7 @@ def snooze_incident(
         user_id=current_user.id
     )
     
-    return incident
+    return incident_to_dict(incident)
 
 @router.post("/{incident_id}/assign")
 def assign_incident(
