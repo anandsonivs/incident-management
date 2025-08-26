@@ -1,3 +1,41 @@
+import pytest
+import sys
+import os
+
+# Add the project root to the Python path so we can import from scripts
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+# Configure pytest
+def pytest_configure(config):
+    """Configure pytest for the Elastic APM alert management tests."""
+    config.addinivalue_line(
+        "markers", "elastic_alerts: marks tests as Elastic APM alert management tests"
+    )
+    config.addinivalue_line(
+        "markers", "integration: marks tests as integration tests"
+    )
+    config.addinivalue_line(
+        "markers", "unit: marks tests as unit tests"
+    )
+
+def pytest_collection_modifyitems(config, items):
+    """Automatically mark tests based on their location."""
+    for item in items:
+        # Mark tests in test_elastic_alert_manager.py as unit tests
+        if "test_elastic_alert_manager" in item.nodeid:
+            item.add_marker(pytest.mark.unit)
+            item.add_marker(pytest.mark.elastic_alerts)
+        
+        # Mark tests in test_alert_template_manager.py as unit tests
+        elif "test_alert_template_manager" in item.nodeid:
+            item.add_marker(pytest.mark.unit)
+            item.add_marker(pytest.mark.elastic_alerts)
+        
+        # Mark tests in test_elastic_alerts_integration.py as integration tests
+        elif "test_elastic_alerts_integration" in item.nodeid:
+            item.add_marker(pytest.mark.integration)
+            item.add_marker(pytest.mark.elastic_alerts)
+
 import os
 import sys
 

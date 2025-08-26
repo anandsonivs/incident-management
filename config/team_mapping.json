@@ -1,0 +1,298 @@
+{
+  "api-gateway": {
+    "team_name": "Platform Team",
+    "description": "Platform infrastructure and API gateway team"
+  },
+  "user-service": {
+    "team_name": "User Management Team",
+    "description": "User management and authentication services team"
+  },
+  "payment-service": {
+    "team_name": "Payment Team",
+    "description": "Payment processing and financial services team"
+  },
+  "order-service": {
+    "team_name": "Order Management Team",
+    "description": "Order processing and fulfillment team"
+  },
+  "inventory-service": {
+    "team_name": "Inventory Team",
+    "description": "Inventory management and stock control team"
+  },
+  "notification-service": {
+    "team_name": "Platform Team",
+    "description": "Platform infrastructure and notification services team"
+  },
+  "email-service": {
+    "team_name": "Platform Team",
+    "description": "Platform infrastructure and email services team"
+  },
+  "sms-service": {
+    "team_name": "Platform Team",
+    "description": "Platform infrastructure and SMS services team"
+  },
+  "analytics-service": {
+    "team_name": "Data Team",
+    "description": "Data analytics and reporting team"
+  },
+  "reporting-service": {
+    "team_name": "Data Team",
+    "description": "Data analytics and reporting team"
+  },
+  "search-service": {
+    "team_name": "Search Team",
+    "description": "Search and recommendation services team"
+  },
+  "recommendation-service": {
+    "team_name": "Search Team",
+    "description": "Search and recommendation services team"
+  },
+  "catalog-service": {
+    "team_name": "Catalog Team",
+    "description": "Product catalog and content management team"
+  },
+  "content-service": {
+    "team_name": "Catalog Team",
+    "description": "Product catalog and content management team"
+  },
+  "media-service": {
+    "team_name": "Media Team",
+    "description": "Media processing and storage team"
+  },
+  "file-service": {
+    "team_name": "Media Team",
+    "description": "Media processing and storage team"
+  },
+  "auth-service": {
+    "team_name": "Security Team",
+    "description": "Security and authentication services team"
+  },
+  "security-service": {
+    "team_name": "Security Team",
+    "description": "Security and authentication services team"
+  },
+  "audit-service": {
+    "team_name": "Security Team",
+    "description": "Security and authentication services team"
+  },
+  "compliance-service": {
+    "team_name": "Security Team",
+    "description": "Security and authentication services team"
+  },
+  "billing-service": {
+    "team_name": "Billing Team",
+    "description": "Billing and subscription management team"
+  },
+  "subscription-service": {
+    "team_name": "Billing Team",
+    "description": "Billing and subscription management team"
+  },
+  "invoice-service": {
+    "team_name": "Billing Team",
+    "description": "Billing and subscription management team"
+  },
+  "shipping-service": {
+    "team_name": "Logistics Team",
+    "description": "Shipping and logistics services team"
+  },
+  "logistics-service": {
+    "team_name": "Logistics Team",
+    "description": "Shipping and logistics services team"
+  },
+  "tracking-service": {
+    "team_name": "Logistics Team",
+    "description": "Shipping and logistics services team"
+  },
+  "customer-service": {
+    "team_name": "Customer Support Team",
+    "description": "Customer support and service team"
+  },
+  "support-service": {
+    "team_name": "Customer Support Team",
+    "description": "Customer support and service team"
+  },
+  "chat-service": {
+    "team_name": "Customer Support Team",
+    "description": "Customer support and service team"
+  },
+  "helpdesk-service": {
+    "team_name": "Customer Support Team",
+    "description": "Customer support and service team"
+  },
+  "marketing-service": {
+    "team_name": "Marketing Team",
+    "description": "Marketing and campaign management team"
+  },
+  "campaign-service": {
+    "team_name": "Marketing Team",
+    "description": "Marketing and campaign management team"
+  },
+  "promotion-service": {
+    "team_name": "Marketing Team",
+    "description": "Marketing and campaign management team"
+  },
+  "loyalty-service": {
+    "team_name": "Marketing Team",
+    "description": "Marketing and campaign management team"
+  },
+  "database-service": {
+    "team_name": "Database Team",
+    "description": "Database administration and management team"
+  },
+  "postgres-service": {
+    "team_name": "Database Team",
+    "description": "Database administration and management team"
+  },
+  "mysql-service": {
+    "team_name": "Database Team",
+    "description": "Database administration and management team"
+  },
+  "redis-service": {
+    "team_name": "Cache Team",
+    "description": "Cache and session management team"
+  },
+  "cache-service": {
+    "team_name": "Cache Team",
+    "description": "Cache and session management team"
+  },
+  "session-service": {
+    "team_name": "Cache Team",
+    "description": "Cache and session management team"
+  },
+  "queue-service": {
+    "team_name": "Message Queue Team",
+    "description": "Message queue and event processing team"
+  },
+  "kafka-service": {
+    "team_name": "Message Queue Team",
+    "description": "Message queue and event processing team"
+  },
+  "rabbitmq-service": {
+    "team_name": "Message Queue Team",
+    "description": "Message queue and event processing team"
+  },
+  "monitoring-service": {
+    "team_name": "DevOps Team",
+    "description": "DevOps and infrastructure monitoring team"
+  },
+  "logging-service": {
+    "team_name": "DevOps Team",
+    "description": "DevOps and infrastructure monitoring team"
+  },
+  "metrics-service": {
+    "team_name": "DevOps Team",
+    "description": "DevOps and infrastructure monitoring team"
+  },
+  "alerting-service": {
+    "team_name": "DevOps Team",
+    "description": "DevOps and infrastructure monitoring team"
+  },
+  "deployment-service": {
+    "team_name": "DevOps Team",
+    "description": "DevOps and infrastructure monitoring team"
+  },
+  "ci-cd-service": {
+    "team_name": "DevOps Team",
+    "description": "DevOps and infrastructure monitoring team"
+  },
+  "backup-service": {
+    "team_name": "DevOps Team",
+    "description": "DevOps and infrastructure monitoring team"
+  },
+  "backup-management": {
+    "team_name": "DevOps Team",
+    "description": "DevOps and infrastructure monitoring team"
+  },
+  "disaster-recovery": {
+    "team_name": "DevOps Team",
+    "description": "DevOps and infrastructure monitoring team"
+  },
+  "load-balancer": {
+    "team_name": "Network Team",
+    "description": "Network infrastructure and load balancing team"
+  },
+  "proxy-service": {
+    "team_name": "Network Team",
+    "description": "Network infrastructure and load balancing team"
+  },
+  "cdn-service": {
+    "team_name": "Network Team",
+    "description": "Network infrastructure and load balancing team"
+  },
+  "dns-service": {
+    "team_name": "Network Team",
+    "description": "Network infrastructure and load balancing team"
+  },
+  "firewall-service": {
+    "team_name": "Network Team",
+    "description": "Network infrastructure and load balancing team"
+  },
+  "vpn-service": {
+    "team_name": "Network Team",
+    "description": "Network infrastructure and load balancing team"
+  },
+  "webhook-service": {
+    "team_name": "Integration Team",
+    "description": "Third-party integrations and webhook management team"
+  },
+  "integration-service": {
+    "team_name": "Integration Team",
+    "description": "Third-party integrations and webhook management team"
+  },
+  "api-integration": {
+    "team_name": "Integration Team",
+    "description": "Third-party integrations and webhook management team"
+  },
+  "third-party-service": {
+    "team_name": "Integration Team",
+    "description": "Third-party integrations and webhook management team"
+  },
+  "partner-service": {
+    "team_name": "Integration Team",
+    "description": "Third-party integrations and webhook management team"
+  },
+  "mobile-api": {
+    "team_name": "Mobile Team",
+    "description": "Mobile application and API team"
+  },
+  "mobile-service": {
+    "team_name": "Mobile Team",
+    "description": "Mobile application and API team"
+  },
+  "ios-service": {
+    "team_name": "Mobile Team",
+    "description": "Mobile application and API team"
+  },
+  "android-service": {
+    "team_name": "Mobile Team",
+    "description": "Mobile application and API team"
+  },
+  "web-service": {
+    "team_name": "Web Team",
+    "description": "Web application and frontend services team"
+  },
+  "frontend-service": {
+    "team_name": "Web Team",
+    "description": "Web application and frontend services team"
+  },
+  "ui-service": {
+    "team_name": "Web Team",
+    "description": "Web application and frontend services team"
+  },
+  "admin-service": {
+    "team_name": "Admin Team",
+    "description": "Administrative and management services team"
+  },
+  "management-service": {
+    "team_name": "Admin Team",
+    "description": "Administrative and management services team"
+  },
+  "dashboard-service": {
+    "team_name": "Admin Team",
+    "description": "Administrative and management services team"
+  },
+  "reporting-dashboard": {
+    "team_name": "Admin Team",
+    "description": "Administrative and management services team"
+  }
+}

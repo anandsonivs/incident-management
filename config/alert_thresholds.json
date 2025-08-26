@@ -1,0 +1,518 @@
+{
+  "global_thresholds": {
+    "latency": {
+      "low": 500.0,
+      "medium": 1000.0,
+      "high": 2000.0,
+      "critical": 5000.0,
+      "unit": "milliseconds",
+      "description": "Response time thresholds"
+    },
+    "error_rate": {
+      "low": 0.01,
+      "medium": 0.03,
+      "high": 0.05,
+      "critical": 0.20,
+      "unit": "percentage",
+      "description": "Error rate thresholds (0.05 = 5%)"
+    },
+    "throughput": {
+      "low": 5.0,
+      "medium": 10.0,
+      "high": 20.0,
+      "critical": 50.0,
+      "unit": "requests_per_minute",
+      "description": "Throughput thresholds"
+    },
+    "cpu_usage": {
+      "low": 0.60,
+      "medium": 0.75,
+      "high": 0.85,
+      "critical": 0.95,
+      "unit": "percentage",
+      "description": "CPU usage thresholds (0.80 = 80%)"
+    },
+    "memory_usage": {
+      "low": 0.70,
+      "medium": 0.80,
+      "high": 0.90,
+      "critical": 0.95,
+      "unit": "percentage",
+      "description": "Memory usage thresholds"
+    },
+    "disk_usage": {
+      "low": 0.75,
+      "medium": 0.85,
+      "high": 0.90,
+      "critical": 0.95,
+      "unit": "percentage",
+      "description": "Disk usage thresholds"
+    },
+    "jvm_heap": {
+      "low": 0.70,
+      "medium": 0.80,
+      "high": 0.90,
+      "critical": 0.95,
+      "unit": "percentage",
+      "description": "JVM heap usage threshold"
+    },
+    "jvm_gc": {
+      "low": 5.0,
+      "medium": 10.0,
+      "high": 20.0,
+      "critical": 50.0,
+      "unit": "events_per_minute",
+      "description": "JVM garbage collection rate threshold"
+    },
+    "database_connections": {
+      "low": 0.60,
+      "medium": 0.75,
+      "high": 0.85,
+      "critical": 0.95,
+      "unit": "percentage",
+      "description": "Database connection pool usage threshold"
+    },
+    "cache_hit_rate": {
+      "low": 0.60,
+      "medium": 0.75,
+      "high": 0.85,
+      "critical": 0.95,
+      "unit": "percentage",
+      "description": "Cache hit rate threshold (higher is better)"
+    }
+  },
+  "service_specific_thresholds": {
+    "api-gateway": {
+      "latency": {
+        "low": 200.0,
+        "medium": 400.0,
+        "high": 800.0,
+        "critical": 1500.0
+      },
+      "error_rate": {
+        "low": 0.005,
+        "medium": 0.01,
+        "high": 0.02,
+        "critical": 0.05
+      },
+      "throughput": {
+        "low": 100.0,
+        "medium": 500.0,
+        "high": 1000.0,
+        "critical": 2000.0
+      }
+    },
+    "user-service": {
+      "latency": {
+        "low": 100.0,
+        "medium": 200.0,
+        "high": 500.0,
+        "critical": 1000.0
+      },
+      "error_rate": {
+        "low": 0.001,
+        "medium": 0.005,
+        "high": 0.01,
+        "critical": 0.03
+      }
+    },
+    "payment-service": {
+      "latency": {
+        "low": 50.0,
+        "medium": 100.0,
+        "high": 200.0,
+        "critical": 500.0
+      },
+      "error_rate": {
+        "low": 0.0001,
+        "medium": 0.001,
+        "high": 0.005,
+        "critical": 0.01
+      },
+      "throughput": {
+        "low": 10.0,
+        "medium": 50.0,
+        "high": 100.0,
+        "critical": 200.0
+      }
+    },
+    "order-service": {
+      "latency": {
+        "low": 150.0,
+        "medium": 300.0,
+        "high": 600.0,
+        "critical": 1200.0
+      },
+      "error_rate": {
+        "low": 0.002,
+        "medium": 0.005,
+        "high": 0.01,
+        "critical": 0.02
+      }
+    },
+    "inventory-service": {
+      "latency": {
+        "low": 100.0,
+        "medium": 200.0,
+        "high": 400.0,
+        "critical": 800.0
+      },
+      "error_rate": {
+        "low": 0.001,
+        "medium": 0.003,
+        "high": 0.008,
+        "critical": 0.015
+      }
+    },
+    "database-service": {
+      "latency": {
+        "low": 10.0,
+        "medium": 25.0,
+        "high": 50.0,
+        "critical": 100.0
+      },
+      "error_rate": {
+        "low": 0.0001,
+        "medium": 0.001,
+        "high": 0.005,
+        "critical": 0.01
+      },
+      "database_connections": {
+        "low": 0.50,
+        "medium": 0.65,
+        "high": 0.80,
+        "critical": 0.90
+      }
+    },
+    "redis-service": {
+      "latency": {
+        "low": 5.0,
+        "medium": 10.0,
+        "high": 20.0,
+        "critical": 50.0
+      },
+      "error_rate": {
+        "low": 0.0001,
+        "medium": 0.001,
+        "high": 0.005,
+        "critical": 0.01
+      },
+      "cache_hit_rate": {
+        "low": 0.85,
+        "medium": 0.90,
+        "high": 0.95,
+        "critical": 0.98
+      }
+    },
+    "kafka-service": {
+      "latency": {
+        "low": 20.0,
+        "medium": 50.0,
+        "high": 100.0,
+        "critical": 200.0
+      },
+      "throughput": {
+        "low": 1000.0,
+        "medium": 5000.0,
+        "high": 10000.0,
+        "critical": 20000.0
+      }
+    },
+    "search-service": {
+      "latency": {
+        "low": 50.0,
+        "medium": 100.0,
+        "high": 200.0,
+        "critical": 500.0
+      },
+      "error_rate": {
+        "low": 0.001,
+        "medium": 0.003,
+        "high": 0.008,
+        "critical": 0.015
+      }
+    },
+    "analytics-service": {
+      "latency": {
+        "low": 200.0,
+        "medium": 500.0,
+        "high": 1000.0,
+        "critical": 2000.0
+      },
+      "error_rate": {
+        "low": 0.002,
+        "medium": 0.005,
+        "high": 0.01,
+        "critical": 0.02
+      },
+      "throughput": {
+        "low": 5.0,
+        "medium": 10.0,
+        "high": 20.0,
+        "critical": 50.0
+      }
+    },
+    "notification-service": {
+      "latency": {
+        "low": 100.0,
+        "medium": 200.0,
+        "high": 400.0,
+        "critical": 800.0
+      },
+      "error_rate": {
+        "low": 0.002,
+        "medium": 0.005,
+        "high": 0.01,
+        "critical": 0.02
+      },
+      "throughput": {
+        "low": 50.0,
+        "medium": 100.0,
+        "high": 200.0,
+        "critical": 500.0
+      }
+    },
+    "email-service": {
+      "latency": {
+        "low": 200.0,
+        "medium": 500.0,
+        "high": 1000.0,
+        "critical": 2000.0
+      },
+      "error_rate": {
+        "low": 0.005,
+        "medium": 0.01,
+        "high": 0.02,
+        "critical": 0.05
+      }
+    },
+    "sms-service": {
+      "latency": {
+        "low": 100.0,
+        "medium": 200.0,
+        "high": 400.0,
+        "critical": 800.0
+      },
+      "error_rate": {
+        "low": 0.002,
+        "medium": 0.005,
+        "high": 0.01,
+        "critical": 0.02
+      }
+    },
+    "webhook-service": {
+      "latency": {
+        "low": 50.0,
+        "medium": 100.0,
+        "high": 200.0,
+        "critical": 500.0
+      },
+      "error_rate": {
+        "low": 0.001,
+        "medium": 0.003,
+        "high": 0.008,
+        "critical": 0.015
+      }
+    },
+    "monitoring-service": {
+      "latency": {
+        "low": 100.0,
+        "medium": 200.0,
+        "high": 400.0,
+        "critical": 800.0
+      },
+      "error_rate": {
+        "low": 0.001,
+        "medium": 0.003,
+        "high": 0.008,
+        "critical": 0.015
+      },
+      "cpu_usage": {
+        "low": 0.50,
+        "medium": 0.65,
+        "high": 0.80,
+        "critical": 0.90
+      },
+      "memory_usage": {
+        "low": 0.60,
+        "medium": 0.75,
+        "high": 0.85,
+        "critical": 0.90
+      }
+    },
+    "logging-service": {
+      "latency": {
+        "low": 50.0,
+        "medium": 100.0,
+        "high": 200.0,
+        "critical": 500.0
+      },
+      "error_rate": {
+        "low": 0.001,
+        "medium": 0.003,
+        "high": 0.008,
+        "critical": 0.015
+      },
+      "disk_usage": {
+        "low": 0.70,
+        "medium": 0.80,
+        "high": 0.85,
+        "critical": 0.90
+      }
+    }
+  },
+  "environment_overrides": {
+    "development": {
+      "latency": {
+        "low": 1000.0,
+        "medium": 2000.0,
+        "high": 5000.0,
+        "critical": 10000.0
+      },
+      "error_rate": {
+        "low": 0.05,
+        "medium": 0.10,
+        "high": 0.20,
+        "critical": 0.40
+      },
+      "cpu_usage": {
+        "low": 0.80,
+        "medium": 0.90,
+        "high": 0.95,
+        "critical": 0.98
+      },
+      "memory_usage": {
+        "low": 0.80,
+        "medium": 0.90,
+        "high": 0.95,
+        "critical": 0.98
+      }
+    },
+    "staging": {
+      "latency": {
+        "low": 750.0,
+        "medium": 1500.0,
+        "high": 3000.0,
+        "critical": 7500.0
+      },
+      "error_rate": {
+        "low": 0.03,
+        "medium": 0.08,
+        "high": 0.15,
+        "critical": 0.30
+      },
+      "cpu_usage": {
+        "low": 0.75,
+        "medium": 0.85,
+        "high": 0.90,
+        "critical": 0.95
+      },
+      "memory_usage": {
+        "low": 0.75,
+        "medium": 0.85,
+        "high": 0.90,
+        "critical": 0.95
+      }
+    },
+    "production": {
+      "latency": {
+        "low": 500.0,
+        "medium": 1000.0,
+        "high": 2000.0,
+        "critical": 5000.0
+      },
+      "error_rate": {
+        "low": 0.01,
+        "medium": 0.03,
+        "high": 0.05,
+        "critical": 0.20
+      },
+      "cpu_usage": {
+        "low": 0.60,
+        "medium": 0.75,
+        "high": 0.85,
+        "critical": 0.95
+      },
+      "memory_usage": {
+        "low": 0.70,
+        "medium": 0.80,
+        "high": 0.90,
+        "critical": 0.95
+      }
+    }
+  },
+  "window_sizes": {
+    "latency": {
+      "low": "10m",
+      "medium": "8m",
+      "high": "5m",
+      "critical": "2m"
+    },
+    "error_rate": {
+      "low": "10m",
+      "medium": "8m",
+      "high": "5m",
+      "critical": "2m"
+    },
+    "throughput": {
+      "low": "15m",
+      "medium": "12m",
+      "high": "10m",
+      "critical": "5m"
+    },
+    "cpu_usage": {
+      "low": "10m",
+      "medium": "8m",
+      "high": "5m",
+      "critical": "2m"
+    },
+    "memory_usage": {
+      "low": "10m",
+      "medium": "8m",
+      "high": "5m",
+      "critical": "2m"
+    },
+    "disk_usage": {
+      "low": "15m",
+      "medium": "12m",
+      "high": "10m",
+      "critical": "5m"
+    },
+    "jvm_heap": {
+      "low": "10m",
+      "medium": "8m",
+      "high": "5m",
+      "critical": "2m"
+    },
+    "jvm_gc": {
+      "low": "10m",
+      "medium": "8m",
+      "high": "5m",
+      "critical": "2m"
+    },
+    "database_connections": {
+      "low": "10m",
+      "medium": "8m",
+      "high": "5m",
+      "critical": "2m"
+    },
+    "cache_hit_rate": {
+      "low": "15m",
+      "medium": "12m",
+      "high": "10m",
+      "critical": "5m"
+    }
+  },
+  "evaluation_periods": {
+    "low": 3,
+    "medium": 2,
+    "high": 1,
+    "critical": 1
+  },
+  "alert_severity_mapping": {
+    "low": "low",
+    "medium": "medium", 
+    "high": "high",
+    "critical": "critical"
+  }
+}
