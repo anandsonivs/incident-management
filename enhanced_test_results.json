@@ -1,0 +1,28 @@
+{
+  "unit_tests": {
+    "total": 4,
+    "passed": 2,
+    "failed": 2,
+    "errors": [
+      "tests/test_updated_crud_operations.py: Tests failed: ",
+      "tests/test_frontend_functionality.py: Tests failed: "
+    ]
+  },
+  "e2e_tests": {
+    "total": 3,
+    "passed": 2,
+    "failed": 1,
+    "errors": [
+      "Comprehensive E2E Tests: Tests failed: "
+    ]
+  },
+  "frontend_tests": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "errors": []
+  },
+  "start_time": 1756437895.696807,
+  "end_time": 1756437898.449755,
+  "duration": 2.752948045730591
+}

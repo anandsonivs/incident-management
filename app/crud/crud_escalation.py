@@ -31,9 +31,32 @@ class CRUDEscalationEvent(CRUDBase[models.EscalationEvent, schemas.EscalationEve
         self, db: Session, *, incident_id: int, skip: int = 0, limit: int = 100
     ) -> List[models.EscalationEvent]:
         """Get all escalation events for an incident."""
+        from sqlalchemy.orm import joinedload
         return (
             db.query(models.EscalationEvent)
+            .options(
+                joinedload(models.EscalationEvent.incident).joinedload(models.Incident.team),
+                joinedload(models.EscalationEvent.policy)
+            )
             .filter(models.EscalationEvent.incident_id == incident_id)
+            .order_by(models.EscalationEvent.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+    
+    def get_all_events(
+        self, db: Session, *, skip: int = 0, limit: int = 100
+    ) -> List[models.EscalationEvent]:
+        """Get all escalation events, sorted by most recent first."""
+        from sqlalchemy.orm import joinedload
+        return (
+            db.query(models.EscalationEvent)
+            .options(
+                joinedload(models.EscalationEvent.incident).joinedload(models.Incident.team),
+                joinedload(models.EscalationEvent.policy)
+            )
+            .order_by(models.EscalationEvent.created_at.desc())
             .offset(skip)
             .limit(limit)
             .all()

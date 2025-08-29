@@ -242,6 +242,84 @@ def test_incident_team_relationship(
     assert content["team_id"] == team.id
 
 
+def test_incident_enhanced_team_information(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    """Test that incident includes enhanced team information (team object) in response."""
+    settings = get_settings()
+    team = create_random_team(db)
+    data = {
+        "title": random_lower_string(),
+        "description": random_lower_string(),
+        "severity": "critical",
+        "service": random_lower_string(),
+        "team_id": team.id,
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/incidents/", headers=superuser_token_headers, json=data,
+    )
+    assert response.status_code == 201
+    content = response.json()
+    assert content["team_id"] == team.id
+    
+    # Get the incident and verify enhanced team info
+    incident_id = content["id"]
+    response = client.get(
+        f"{settings.API_V1_STR}/incidents/{incident_id}", headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["team_id"] == team.id
+    
+    # Check that enhanced team information is included
+    assert "team" in content
+    assert content["team"]["id"] == team.id
+    assert content["team"]["name"] == team.name
+    assert content["team"]["description"] == team.description
+
+
+def test_incident_list_enhanced_team_information(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    """Test that incident list includes enhanced team information."""
+    settings = get_settings()
+    team = create_random_team(db)
+    data = {
+        "title": random_lower_string(),
+        "description": random_lower_string(),
+        "severity": "critical",
+        "service": random_lower_string(),
+        "team_id": team.id,
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/incidents/", headers=superuser_token_headers, json=data,
+    )
+    assert response.status_code == 201
+    
+    # Get incidents list and verify enhanced team info
+    response = client.get(
+        f"{settings.API_V1_STR}/incidents/", headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    
+    # Find our incident in the list
+    our_incident = None
+    for incident in content:
+        if incident["team_id"] == team.id:
+            our_incident = incident
+            break
+    
+    assert our_incident is not None
+    assert our_incident["team_id"] == team.id
+    
+    # Check that enhanced team information is included
+    assert "team" in our_incident
+    assert our_incident["team"]["id"] == team.id
+    assert our_incident["team"]["name"] == team.name
+    assert our_incident["team"]["description"] == team.description
+
+
 def test_incident_with_team_escalation_context(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
@@ -307,3 +385,47 @@ def test_incident_team_filtering_with_status(
     for incident in content:
         assert incident["team_id"] == team.id
         assert incident["status"] == "triggered"
+
+
+def test_incident_sorting_by_creation_date(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    """Test that incidents are sorted by creation date (most recent first)."""
+    settings = get_settings()
+    team = create_random_team(db)
+    
+    # Create multiple incidents
+    incidents_data = []
+    for i in range(3):
+        data = {
+            "title": f"Incident {i}",
+            "description": random_lower_string(),
+            "severity": "critical",
+            "service": random_lower_string(),
+            "team_id": team.id,
+        }
+        incidents_data.append(data)
+    
+    # Create incidents
+    for data in incidents_data:
+        response = client.post(
+            f"{settings.API_V1_STR}/incidents/", headers=superuser_token_headers, json=data,
+        )
+        assert response.status_code == 201
+    
+    # Get incidents list and verify sorting
+    response = client.get(
+        f"{settings.API_V1_STR}/incidents/", headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    
+    # Find our incidents and verify they're sorted by creation date (most recent first)
+    our_incidents = [incident for incident in content if incident["team_id"] == team.id]
+    assert len(our_incidents) >= 3
+    
+    # Check that incidents are sorted by created_at (most recent first)
+    for i in range(len(our_incidents) - 1):
+        current_created_at = our_incidents[i]["created_at"]
+        next_created_at = our_incidents[i + 1]["created_at"]
+        assert current_created_at >= next_created_at, f"Incident {i} should be created after or at the same time as incident {i+1}"

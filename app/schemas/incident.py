@@ -90,12 +90,13 @@ class IncidentInDBBase(IncidentBase):
     )
 
 class Incident(IncidentInDBBase):
-    pass
+    team: Optional[Dict[str, Any]] = Field(default=None, description="Team information")
 
 class IncidentWithRelations(IncidentInDBBase):
     assignments: List[Any] = Field(default_factory=list)
     comments: List[Any] = Field(default_factory=list)
     timeline_events: List[Any] = Field(default_factory=list)
+    team: Optional[Dict[str, Any]] = Field(default=None, description="Team information")
     
     # Ensure status has a default value from IncidentStatus enum
     status: IncidentStatus = IncidentStatus.TRIGGERED

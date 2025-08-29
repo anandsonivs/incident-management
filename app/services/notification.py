@@ -51,10 +51,40 @@ class NotificationService:
 	) -> None:
 		"""
 		Generic notification interface used by escalation actions.
-		This can be expanded to resolve recipients and channels.
+		This stores notifications in the database and can be expanded to send via email/SMS/etc.
 		"""
-		print(f"[Notification:{action_type}] incident={incident_id} to={recipient} msg={message}")
-		# In a real implementation, map recipient to users/channels and dispatch via _send_email/_send_sms/etc.
+		try:
+			from app.crud.crud_notification import create_notification
+			from app.models.notification import NotificationChannel
+			
+			# Create notification record in database
+			notification = create_notification(
+				db=self.db,
+				incident_id=incident_id,
+				recipient=recipient,
+				title=f"Incident {incident_id} - {action_type.title()}",
+				message=message,
+				channel=NotificationChannel.EMAIL,
+				action_type=action_type,
+				metadata=metadata or {}
+			)
+			
+			print(f"[Notification:{action_type}] incident={incident_id} to={recipient} msg={message}")
+			print(f"Notification stored with ID: {notification.id}")
+			
+			# TODO: In a real implementation, send actual email/SMS here
+			# For now, we'll just mark it as sent
+			from app.crud.crud_notification import mark_notification_sent
+			mark_notification_sent(self.db, notification.id)
+			
+		except Exception as e:
+			print(f"Error sending notification: {e}")
+			# Mark as failed if we can
+			try:
+				from app.crud.crud_notification import mark_notification_failed
+				mark_notification_failed(self.db, notification.id, str(e))
+			except:
+				pass
 	
 	def _get_users_to_notify(
 		self, incident: models.Incident, event_type: str

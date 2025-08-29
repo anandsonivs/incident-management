@@ -31,7 +31,16 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         
         # Filter out non-model fields
         model_fields = {field.name for field in self.model.__table__.columns}
-        filtered_data = {k: v for k, v in obj_in_data.items() if k in model_fields}
+        model_attrs = {attr for attr in dir(self.model) if not attr.startswith('_')}
+        
+        # Handle field aliases (e.g., metadata -> event_metadata)
+        filtered_data = {}
+        for k, v in obj_in_data.items():
+            if k in model_fields:
+                filtered_data[k] = v
+            elif k == "metadata" and "event_metadata" in model_attrs:
+                # Handle the metadata alias - the database column is 'metadata' but model field is 'event_metadata'
+                filtered_data["event_metadata"] = v
         db_obj = self.model(**filtered_data)  # type: ignore
         db.add(db_obj)
         db.commit()

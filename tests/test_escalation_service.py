@@ -60,6 +60,7 @@ def test_manager(test_team):
 
 @pytest.fixture
 def test_incident(test_team):
+    from datetime import timezone
     return Incident(
         id=1,
         title="Test Incident",
@@ -67,7 +68,7 @@ def test_incident(test_team):
         severity="high",
         service="api",
         team_id=test_team.id,
-        created_at=datetime.utcnow() - timedelta(minutes=30)
+        created_at=datetime.now(timezone.utc) - timedelta(minutes=30)
     )
 
 @pytest.fixture

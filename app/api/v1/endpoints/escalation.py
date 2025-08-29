@@ -141,6 +141,56 @@ def delete_escalation_policy(
 
 # Escalation Event Endpoints
 
+@router.get("/events/")
+def get_all_escalation_events(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+):
+    """
+    Get all escalation events, sorted by most recent first.
+    """
+    events = crud.escalation_event.get_all_events(
+        db, skip=skip, limit=limit
+    )
+    
+    # Serialize events with related data
+    serialized_events = []
+    for event in events:
+        event_data = {
+            "id": event.id,
+            "incident_id": event.incident_id,
+            "policy_id": event.policy_id,
+            "step": event.step,
+            "status": event.status,
+            "triggered_at": event.triggered_at,
+            "completed_at": event.completed_at,
+            "created_at": event.created_at,
+            "metadata": event.event_metadata,
+            # Include incident information
+            "incident": {
+                "id": event.incident.id,
+                "title": event.incident.title,
+                "service": event.incident.service,
+                "severity": event.incident.severity,
+                "team": {
+                    "id": event.incident.team.id,
+                    "name": event.incident.team.name,
+                    "description": event.incident.team.description
+                } if event.incident.team else None
+            } if event.incident else None,
+            # Include policy information
+            "policy": {
+                "id": event.policy.id,
+                "name": event.policy.name,
+                "description": event.policy.description
+            } if event.policy else None
+        }
+        serialized_events.append(event_data)
+    
+    return serialized_events
+
 @router.get("/incidents/{incident_id}/escalation-events/")
 def get_incident_escalation_events(
     incident_id: int,
@@ -169,9 +219,45 @@ def get_incident_escalation_events(
             detail="Not enough permissions to view this incident's escalation events",
         )
     
-    return crud.escalation_event.get_by_incident(
+    events = crud.escalation_event.get_by_incident(
         db, incident_id=incident_id, skip=skip, limit=limit
     )
+    
+    # Serialize events with related data
+    serialized_events = []
+    for event in events:
+        event_data = {
+            "id": event.id,
+            "incident_id": event.incident_id,
+            "policy_id": event.policy_id,
+            "step": event.step,
+            "status": event.status,
+            "triggered_at": event.triggered_at,
+            "completed_at": event.completed_at,
+            "created_at": event.created_at,
+            "metadata": event.event_metadata,
+            # Include incident information
+            "incident": {
+                "id": event.incident.id,
+                "title": event.incident.title,
+                "service": event.incident.service,
+                "severity": event.incident.severity,
+                "team": {
+                    "id": event.incident.team.id,
+                    "name": event.incident.team.name,
+                    "description": event.incident.team.description
+                } if event.incident.team else None
+            } if event.incident else None,
+            # Include policy information
+            "policy": {
+                "id": event.policy.id,
+                "name": event.policy.name,
+                "description": event.policy.description
+            } if event.policy else None
+        }
+        serialized_events.append(event_data)
+    
+    return serialized_events
 
 # Manual Escalation Endpoint
 
@@ -203,8 +289,13 @@ async def escalate_incident(
         )
     
     # Trigger escalation check
-    escalation_service = get_escalation_service(db)
-    await escalation_service.check_and_escalate_incident(incident)
+    try:
+        escalation_service = get_escalation_service(db)
+        await escalation_service.check_and_escalate_incident(incident)
+    except Exception as e:
+        print(f"Escalation error: {e}")
+        import traceback
+        traceback.print_exc()
     
     # Refresh and return the incident
     db.refresh(incident)

@@ -36,7 +36,7 @@ class EscalationEvent(Base):
     status = Column(String, nullable=False)  # pending, in_progress, completed, failed
     triggered_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True))
-    metadata_ = Column("metadata", JSON, default=dict)
+    event_metadata = Column("metadata", JSON, default=dict)
 
     # Relationships
     incident = relationship("Incident", back_populates="escalation_events")

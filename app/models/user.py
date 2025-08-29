@@ -34,3 +34,4 @@ class User(Base):
     incident_assignments = relationship("IncidentAssignment", back_populates="user")
     comments = relationship("IncidentComment", back_populates="user")
     notification_preferences = relationship("NotificationPreference", back_populates="user")
+    notifications = relationship("Notification", back_populates="user")

@@ -33,6 +33,11 @@ def get_current_user(
 		)
 	# Test-mode shortcut to avoid real DB hits
 	if os.getenv("ENV") == "test":
+		# Try to get the actual user from the database first
+		user = crud.user.get(db, id=token_data.sub)
+		if user:
+			return user
+		# Fallback to default test user if not found
 		user = models.User(
 			id=int(token_data.sub) if token_data.sub else 1,
 			email="test@example.com",

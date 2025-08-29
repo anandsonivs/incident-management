@@ -826,6 +826,134 @@ class E2ETestRunner:
         
         return False
     
+    def test_escalation_events_api(self):
+        """Test new escalation events API endpoints."""
+        print("\n🔍 Testing Escalation Events API...")
+        
+        if not self.test_user or not self.test_token:
+            self.log_test("Escalation Events API", False, "No authenticated user")
+            return
+        
+        try:
+            # Test getting all escalation events
+            response = self.session.get(f"{BASE_URL}/v1/escalation/events/")
+            if response.status_code == 200:
+                events = response.json()
+                self.log_test("Get All Escalation Events", True, f"Found {len(events)} events")
+            else:
+                self.log_test("Get All Escalation Events", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get All Escalation Events", False, f"Error: {e}")
+        
+        try:
+            # Test getting incident-specific escalation events
+            if self.test_incident:
+                response = self.session.get(f"{BASE_URL}/v1/escalation/incidents/{self.test_incident['id']}/escalation-events/")
+                if response.status_code == 200:
+                    events = response.json()
+                    self.log_test("Get Incident Escalation Events", True, f"Found {len(events)} events")
+                else:
+                    self.log_test("Get Incident Escalation Events", False, f"Status: {response.status_code}")
+            else:
+                self.log_test("Get Incident Escalation Events", False, "No test incident available")
+        except Exception as e:
+            self.log_test("Get Incident Escalation Events", False, f"Error: {e}")
+        
+        try:
+            # Test manual escalation trigger
+            if self.test_incident:
+                response = self.session.post(f"{BASE_URL}/v1/escalation/incidents/{self.test_incident['id']}/escalate/")
+                if response.status_code == 200:
+                    self.log_test("Manual Escalation Trigger", True, "Escalation triggered successfully")
+                else:
+                    self.log_test("Manual Escalation Trigger", False, f"Status: {response.status_code}")
+            else:
+                self.log_test("Manual Escalation Trigger", False, "No test incident available")
+        except Exception as e:
+            self.log_test("Manual Escalation Trigger", False, f"Error: {e}")
+    
+    def test_notifications_api(self):
+        """Test new notifications API endpoints."""
+        print("\n🔍 Testing Notifications API...")
+        
+        if not self.test_user or not self.test_token:
+            self.log_test("Notifications API", False, "No authenticated user")
+            return
+        
+        try:
+            # Test getting all notifications
+            response = self.session.get(f"{BASE_URL}/v1/notifications/")
+            if response.status_code == 200:
+                notifications = response.json()
+                self.log_test("Get All Notifications", True, f"Found {len(notifications)} notifications")
+            else:
+                self.log_test("Get All Notifications", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get All Notifications", False, f"Error: {e}")
+        
+        try:
+            # Test getting notification history
+            response = self.session.get(f"{BASE_URL}/v1/notifications/history")
+            if response.status_code == 200:
+                notifications = response.json()
+                self.log_test("Get Notification History", True, f"Found {len(notifications)} notifications")
+            else:
+                self.log_test("Get Notification History", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get Notification History", False, f"Error: {e}")
+    
+    def test_frontend_integration(self):
+        """Test frontend integration and functionality."""
+        print("\n🔍 Testing Frontend Integration...")
+        
+        try:
+            # Test frontend HTML loading
+            response = self.session.get(f"{BASE_URL}/")
+            if response.status_code == 200:
+                html_content = response.text
+                if "Incident Management" in html_content:
+                    self.log_test("Frontend HTML Loading", True, "Frontend loads correctly")
+                else:
+                    self.log_test("Frontend HTML Loading", False, "Missing expected content")
+            else:
+                self.log_test("Frontend HTML Loading", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Frontend HTML Loading", False, f"Error: {e}")
+        
+        try:
+            # Test JavaScript loading with cache busting
+            response = self.session.get(f"{BASE_URL}/app.js?v=6&t=20250828&cb=1735392000")
+            if response.status_code == 200:
+                js_content = response.text
+                if "IncidentManagementApp" in js_content and "triggerEscalation" in js_content:
+                    self.log_test("Frontend JavaScript Loading", True, "JavaScript loads with cache busting")
+                else:
+                    self.log_test("Frontend JavaScript Loading", False, "Missing expected JavaScript functions")
+            else:
+                self.log_test("Frontend JavaScript Loading", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Frontend JavaScript Loading", False, f"Error: {e}")
+        
+        try:
+            # Test API endpoints used by frontend
+            response = self.session.get(f"{BASE_URL}/v1/escalation/events/")
+            if response.status_code == 200:
+                self.log_test("Frontend Escalations API", True, "Escalations API accessible")
+            else:
+                self.log_test("Frontend Escalations API", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Frontend Escalations API", False, f"Error: {e}")
+        
+        try:
+            # Test notifications API
+            response = self.session.get(f"{BASE_URL}/v1/notifications/")
+            if response.status_code == 200:
+                self.log_test("Frontend Notifications API", True, "Notifications API accessible")
+            else:
+                self.log_test("Frontend Notifications API", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Frontend Notifications API", False, f"Error: {e}")
+    
     def run_all_tests(self):
         """Run all end-to-end tests."""
         print("🚀 Starting Comprehensive End-to-End API Tests...")
@@ -851,11 +979,16 @@ class E2ETestRunner:
             self.test_notification_preferences_admin()
             self.test_escalation_management_admin()
             
-            # Run new team and role system tests
-            self.test_team_management()
-            self.test_user_roles_and_teams()
-            self.test_team_based_incidents()
-            self.test_team_escalation_policies()
+                    # Run new team and role system tests
+        self.test_team_management()
+        self.test_user_roles_and_teams()
+        self.test_team_based_incidents()
+        self.test_team_escalation_policies()
+        
+        # Run new escalation events and notifications tests
+        self.test_escalation_events_api()
+        self.test_notifications_api()
+        self.test_frontend_integration()
         
         self.results["end_time"] = time.time()
         self.results["duration"] = self.results["end_time"] - self.results["start_time"]

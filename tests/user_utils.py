@@ -28,7 +28,7 @@ def create_random_user(
         email=random_email(),
         password=random_lower_string(),
         full_name=random_lower_string(),
-        team_id=team_id,
+        
         role=role,
         is_superuser=is_superuser,
     )
@@ -37,7 +37,7 @@ def create_random_user(
 
 def create_random_superuser(db: Session, *, team_id: Optional[int] = None) -> User:
     """Create a random superuser for testing."""
-    return create_random_user(db, team_id=team_id, is_superuser=True)
+    return create_random_user(db,  is_superuser=True)
 
 
 def create_random_user_data(

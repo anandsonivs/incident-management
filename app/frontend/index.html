@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Management System</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900 flex items-center">
+                            <div class="relative mr-3">
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <i class="fas fa-shield-alt text-white text-sm"></i>
+                                </div>
+                                <div class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-exclamation text-white text-xs"></i>
+                                </div>
+                            </div>
+                            <span class="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                                Incident Management
+                            </span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <select id="teamFilter" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm">
+                            <option value="">All Teams</option>
+                        </select>
+                    </div>
+                    <div class="relative">
+                        <select id="statusFilter" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm">
+                            <option value="">All Status</option>
+                            <option value="triggered">Triggered</option>
+                            <option value="acknowledged">Acknowledged</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="snoozed">Snoozed</option>
+                        </select>
+                    </div>
+                    <button id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <span id="userInfo" class="text-sm text-gray-700"></span>
+                        <button id="logoutBtn" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Triggered</p>
+                        <p id="triggeredCount" class="text-2xl font-semibold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Acknowledged</p>
+                        <p id="acknowledgedCount" class="text-2xl font-semibold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-green-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Resolved</p>
+                        <p id="resolvedCount" class="text-2xl font-semibold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-users text-blue-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">My Incidents</p>
+                        <p id="myIncidentsCount" class="text-2xl font-semibold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Create Incident Button -->
+        <div class="flex justify-end mb-4">
+            <button id="createIncidentBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                <i class="fas fa-plus mr-2"></i>Create Incident
+            </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8 px-6">
+                    <button class="tab-btn active py-4 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600" data-tab="all">
+                        All Incidents
+                    </button>
+                    <button class="tab-btn py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="assigned">
+                        Assigned to Me
+                    </button>
+                    <button class="tab-btn py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="acknowledged">
+                        Acknowledged by Me
+                    </button>
+                    <button class="tab-btn py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="escalations">
+                        Escalations
+                    </button>
+                    <button class="tab-btn py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="notifications">
+                        Notifications
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="p-6">
+                <!-- All Incidents Tab -->
+                <div id="all-tab" class="tab-content active">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-medium text-gray-900">All Incidents</h2>
+                        <div class="flex space-x-2">
+                            <input type="text" id="searchInput" placeholder="Search incidents..." class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                    <div id="incidentsList" class="space-y-4">
+                        <!-- Incidents will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Assigned to Me Tab -->
+                <div id="assigned-tab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-medium text-gray-900">Incidents Assigned to Me</h2>
+                        <div class="flex space-x-2">
+                            <input type="text" id="assignedSearchInput" placeholder="Search assigned incidents..." class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                    <div id="assignedIncidentsList" class="space-y-4">
+                        <!-- Assigned incidents will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Acknowledged by Me Tab -->
+                <div id="acknowledged-tab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-medium text-gray-900">Incidents Acknowledged by Me</h2>
+                        <div class="flex space-x-2">
+                            <input type="text" id="acknowledgedSearchInput" placeholder="Search acknowledged incidents..." class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                    <div id="acknowledgedIncidentsList" class="space-y-4">
+                        <!-- Acknowledged incidents will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Escalations Tab -->
+                <div id="escalations-tab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-medium text-gray-900">Escalation Events</h2>
+                        <div class="flex space-x-2">
+                            <input type="text" id="escalationsSearchInput" placeholder="Search escalations..." class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                    <div id="escalationsList" class="space-y-4">
+                        <!-- Escalations will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Notifications Tab -->
+                <div id="notifications-tab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-medium text-gray-900">Notification History</h2>
+                        <div class="flex space-x-2">
+                            <input type="text" id="notificationsSearchInput" placeholder="Search notifications..." class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                    <div id="notificationsList" class="space-y-4">
+                        <!-- Notifications will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incident Detail Modal -->
+    <div id="incidentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modalTitle" class="text-lg font-medium text-gray-900">Incident Details</h3>
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div id="modalContent" class="space-y-6">
+                    <!-- Incident details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Incident Modal -->
+    <div id="createIncidentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Create New Incident</h3>
+                <form id="createIncidentForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Title</label>
+                        <input type="text" id="incidentTitle" required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea id="incidentDescription" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Severity</label>
+                            <select id="incidentSeverity" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Service</label>
+                            <input type="text" id="incidentService" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="cancelCreate" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md">Cancel</button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">Create Incident</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=6&t=20250828&cb=1735392000"></script>
+</body>
+</html>

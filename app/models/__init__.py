@@ -13,6 +13,7 @@ from .incident import (
     TimelineEventType,
 )
 from .notification_preference import NotificationPreference
+from .notification import Notification, NotificationStatus, NotificationChannel
 from .escalation import EscalationPolicy, EscalationEvent
 
 # This ensures that all models are imported and SQLAlchemy can discover them
@@ -27,6 +28,9 @@ __all__ = [
     'TimelineEventType',
     'User',
     'NotificationPreference',
+    'Notification',
+    'NotificationStatus',
+    'NotificationChannel',
     'EscalationPolicy',
     'EscalationEvent',
 ]

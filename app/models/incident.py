@@ -42,6 +42,7 @@ class Incident(Base):
     comments = relationship("IncidentComment", back_populates="incident")
     timeline_events = relationship("TimelineEvent", back_populates="incident")
     escalation_events = relationship("EscalationEvent", back_populates="incident")
+    notifications = relationship("Notification", back_populates="incident")
 
 class IncidentAssignment(Base):
     __tablename__ = "incident_assignments"

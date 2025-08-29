@@ -1,0 +1,259 @@
+/* Custom styles for Incident Management UI */
+
+/* Status badges */
+.status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-triggered {
+    @apply bg-red-100 text-red-800;
+}
+
+.status-acknowledged {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-resolved {
+    @apply bg-green-100 text-green-800;
+}
+
+.status-snoozed {
+    @apply bg-gray-100 text-gray-800;
+}
+
+/* Severity badges */
+.severity-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.severity-critical {
+    @apply bg-red-100 text-red-800;
+}
+
+.severity-high {
+    @apply bg-orange-100 text-orange-800;
+}
+
+.severity-medium {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+.severity-low {
+    @apply bg-blue-100 text-blue-800;
+}
+
+/* Incident cards */
+.incident-card {
+    @apply bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer;
+}
+
+.incident-card:hover {
+    @apply border-blue-300;
+}
+
+.incident-card.urgent {
+    @apply border-red-300 bg-red-50;
+}
+
+.incident-card.assigned {
+    @apply border-blue-300 bg-blue-50;
+}
+
+/* Timeline styles */
+.timeline {
+    @apply space-y-4;
+}
+
+.timeline-item {
+    @apply flex items-start space-x-3;
+}
+
+.timeline-icon {
+    @apply flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-sm;
+}
+
+.timeline-content {
+    @apply flex-1 min-w-0;
+}
+
+.timeline-time {
+    @apply text-sm text-gray-500;
+}
+
+/* Modal animations */
+.modal-enter {
+    animation: modalEnter 0.3s ease-out;
+}
+
+.modal-exit {
+    animation: modalExit 0.3s ease-in;
+}
+
+@keyframes modalEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes modalExit {
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+}
+
+/* Loading states */
+.loading {
+    @apply animate-pulse bg-gray-200 rounded;
+}
+
+.loading-text {
+    @apply h-4 bg-gray-200 rounded w-3/4;
+}
+
+.loading-card {
+    @apply h-32 bg-gray-200 rounded;
+}
+
+/* Tab styles */
+.tab-btn.active {
+    @apply border-blue-500 text-blue-600;
+}
+
+.tab-btn:not(.active) {
+    @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+}
+
+.tab-content {
+    @apply transition-opacity duration-200;
+}
+
+.tab-content.hidden {
+    @apply opacity-0 pointer-events-none;
+}
+
+.tab-content.active {
+    @apply opacity-100;
+}
+
+/* Button states */
+.btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+}
+
+.btn-secondary {
+    @apply bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+}
+
+.btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+}
+
+.btn-success {
+    @apply bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+}
+
+.btn-warning {
+    @apply bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+}
+
+/* Form styles */
+.form-input {
+    @apply mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-gray-700;
+}
+
+/* Notification styles */
+.notification {
+    @apply fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg max-w-sm;
+}
+
+.notification-success {
+    @apply bg-green-100 border border-green-400 text-green-700;
+}
+
+.notification-error {
+    @apply bg-red-100 border border-red-400 text-red-700;
+}
+
+.notification-warning {
+    @apply bg-yellow-100 border border-yellow-400 text-yellow-700;
+}
+
+.notification-info {
+    @apply bg-blue-100 border border-blue-400 text-blue-700;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .incident-card {
+        @apply p-4;
+    }
+    
+    .timeline-item {
+        @apply flex-col items-start space-x-0 space-y-2;
+    }
+    
+    .modal-content {
+        @apply w-full max-w-none mx-2;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .incident-card {
+        @apply bg-gray-800 border-gray-700 text-white;
+    }
+    
+    .incident-card:hover {
+        @apply border-blue-500;
+    }
+    
+    .form-input {
+        @apply bg-gray-700 border-gray-600 text-white;
+    }
+}
+
+/* Accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus styles for keyboard navigation */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .incident-card {
+        @apply border border-gray-300 shadow-none;
+    }
+}

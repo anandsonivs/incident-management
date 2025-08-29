@@ -120,8 +120,7 @@ class EscalationEventBase(BaseModel):
     )
     metadata: Dict[str, Any] = Field(
         default={},
-        description="Additional metadata for the escalation event",
-        alias="metadata_"
+        description="Additional metadata for the escalation event"
     )
     
     model_config = ConfigDict(

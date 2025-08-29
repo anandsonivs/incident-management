@@ -2,6 +2,8 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse
+from pathlib import Path
 
 from app.core.config import get_settings
 from app.worker import start_worker, stop_worker
@@ -9,6 +11,9 @@ from app.worker import start_worker, stop_worker
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Get the frontend directory path
+frontend_dir = Path(__file__).parent / "frontend"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -54,15 +59,36 @@ def create_app() -> FastAPI:
     async def health_check():
         return {"status": "ok"}
     
-    # Root endpoint
-    @app.get("/")
-    async def root():
-        return {
-            "message": f"Welcome to the {settings.PROJECT_NAME} API",
-            "version": settings.VERSION,
-            "docs": "/docs",
-            "redoc": "/redoc"
-        }
+    # Frontend routes at root level
+    @app.get("/", response_class=HTMLResponse)
+    async def serve_index():
+        """Serve the main index.html file."""
+        index_path = frontend_dir / "index.html"
+        if not index_path.exists():
+            return {"message": f"Welcome to the {settings.PROJECT_NAME} API", "version": settings.VERSION}
+        
+        with open(index_path, 'r') as f:
+            return HTMLResponse(content=f.read())
+
+    @app.get("/login.html", response_class=HTMLResponse)
+    async def serve_login():
+        """Serve the login.html file."""
+        login_path = frontend_dir / "login.html"
+        if not login_path.exists():
+            return {"error": "Login page not found"}
+        
+        with open(login_path, 'r') as f:
+            return HTMLResponse(content=f.read())
+
+    @app.get("/{filename}")
+    async def serve_static_file(filename: str):
+        """Serve static files (CSS, JS, etc.)."""
+        file_path = frontend_dir / filename
+        
+        if not file_path.exists():
+            return {"error": "File not found"}
+        
+        return FileResponse(file_path)
     
     return app
 
